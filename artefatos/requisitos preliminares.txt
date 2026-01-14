@@ -1,0 +1,418 @@
+A seguir está um consolidado completo, detalhado e autoexplicativo do sistema exatamente no que você pediu e foi corrigindo ao longo da conversa, sem “inventar” regras novas nem empurrar sugestões adicionais. Onde existe decisão que você não cravou explicitamente, eu marco como PONTO_EM_ABERTO (POA).
+
+1) Contexto, objetivo e uso do sistema
+Este sistema é um Hub Central de Gestão de Atividades para o time (operacional, liderança e gestão) acompanhar e executar trabalho usando um Kanban altamente configurável.
+O objetivo do sistema é:
+1. Permitir que o time organize atividades em Boards Kanban (quadro com colunas/raias e cards).
+2. Permitir que sistemas externos (telemetria, cobrança, contato/educação, etc.) criem/atualizem cards automaticamente em boards específicos, para virar trabalho executável pelo time.
+3. Permitir que o time execute o trabalho dentro do card (preencher informações, registrar ações e mover o card no fluxo).
+4. Permitir que o sistema tenha regras/automação (gatilho → condição → ação) configuradas via tela para apoiar o fluxo.
+5. Permitir integrações de saída por regras (ex.: webhook/WhatsApp/email/BI), mantendo governança.
+6. Registrar um histórico estruturado de tudo que acontece com cada card.
+Ponto crucial do desenho: o sistema deve ser genérico e evolutivo, para que os cards possam se adaptar a diferentes necessidades de negócio sem precisar fazer build a cada mudança de “formato de card”, mas sem exigir que o usuário opere via JSON no dia a dia.
+
+2) Como o sistema se organiza (estrutura)
+O sistema é organizado em níveis:
+2.1 Módulos
+* O sistema pode ter N módulos.
+* Um módulo representa um agrupador mais global (ex.: “Vistoria”, “Telemetria”, “Financeiro”, etc.).
+2.2 Árvore (hierarquia de contexto)
+* Dentro do módulo, há uma árvore (hierarquia) com N níveis de profundidade, configurável conforme necessidade.
+* Exemplo: Empresa → Unidade → Área → Processo → Board.
+* O nó raiz (root) está relacionado a um módulo.
+* As folhas da árvore apontam para um Board Kanban.
+2.3 Boards (Kanban)
+* O Board é onde o trabalho acontece: colunas/raias + cards.
+* Um módulo pode ter N boards distintos.
+* Foi definido um critério de integridade: cada board trata um problema específico e trabalha com um tipo específico de card (CardType), para não misturar coisas aleatórias no mesmo board.
+
+3) Cards: conceito, configurabilidade e dados
+3.1 Card como “unidade de trabalho”
+* Cada card representa uma atividade/ocorrência/solicitação que alguém precisa tratar.
+* Cards são movimentados manualmente entre colunas (drag & drop) pelo time.
+3.2 Exibição do card (antes de abrir)
+* O card tem uma “face” no Kanban (antes de abrir o modal).
+* Você precisa configurar quais informações aparecem ali.
+* A regra definida: essa configuração vem da definição do CardType/Fields (ver seção 5), escolhendo o que “fica em destaque” no card fechado.
+3.3 Modal do card (detalhes)
+* Ao clicar no card, abre um modal com:
+    * Dados exibidos (readonly e/ou editáveis conforme definição)
+    * Histórico do card
+    * (Se aplicável) Plugins de UI associados ao CardType
+3.4 Histórico universal (obrigatório)
+* Todo card deve manter um histórico estruturado de eventos (timeline).
+* Deve registrar eventos como: criação, movimento entre colunas, alteração de campos, execução de automação, execuções de integrações de saída, etc.
+* Não precisa mostrar apenas “diff”; pode registrar o “valor do que mudou” (como você comentou) — o importante é ser rastreável e estruturado.
+
+4) Separação de conceitos: Fonte de Entrada vs Integração de Saída vs Plugin
+Você definiu claramente três conceitos diferentes:
+4.1 Fonte de Entrada (IngressSource)
+* É o conceito de entrada: “de onde vem o dado / sistema de origem”.
+* Ex.: telemetria, cobrança, contato, educação.
+* A Fonte de Entrada determina:
+    * Qual sistema está enviando
+    * Qual o identificador do evento (externalEventId)
+    * Qual o esquema do JSON de entrada (schema do payload externo)
+    * Como o payload será mapeado para o card do board
+O objetivo do ingress é permitir que um sistema externo envie eventos e isso vire card dentro do board certo.
+4.2 Integração de Saída (ActionConnector / Conector)
+* É o conceito de saída: algo que a automação pode executar para enviar dados para fora (webhook, WhatsApp, e-mail, BI etc.).
+* Essas integrações de saída são usadas como “Ações” dentro do motor de automação.
+* Essas integrações devem existir como catálogo (pré-cadastradas / registradas) para aparecerem na UI como ação selecionável.
+* Você aceitou o MVP mínimo útil: Webhook genérico (configurável) como primeiro conector.
+4.3 Plugin (definição fechada por você)
+* Plugin não é automação.
+* Plugin não é entrada.
+* Plugin é somente um componente visual dentro do card (no modal), associado ao CardType.
+* O plugin pode executar lógica e operar no backend (inclusive persistir no banco), mas ele existe como experiência de UI dentro do card.
+* O CardType, ao ser cadastrado, define se possui plugin(s) e quais.
+
+5) CardType: Fields, bindingRef e exibição/edição (decisão fechada)
+Você aprovou o modelo de CardType baseado em:
+5.1 Fields com bindingRef + mode
+* O CardType é definido por uma lista de Fields.
+* Cada Field tem:
+    * Um bindingRef (de onde o dado vem e/ou onde é gravado)
+    * Um mode (editable/readonly)
+    * Um tipo (string, number, date, boolean, enum, array, object)
+    * Regras de exibição e formatação
+    * Marcação do que deve ser exibido (modal e/ou card fechado)
+5.2 Namespaces de bindingRef
+Os campos podem apontar para:
+* source.* → dados da origem (sourceData)
+* inputs.* → dados preenchidos pelo usuário (inputs)
+* outputs.* → dados calculados pelo sistema/automação (outputs)
+* props.* → propriedades universais (labels, assignee, dueDate etc.)
+* system.* → metadados do card (createdAt, id, etc.)
+* pluginData.<pluginKey>.* → dados do plugin (quando houver)
+5.3 Exibição de object/array (definição fechada)
+* Para object e array: não tem problema exibir.
+* Deve exibir tudo que estiver marcado para ser exibido.
+* A UI pode representar subpropriedades com indentação (dentado) para ficar claro.
+* No MVP, object/array pode ser somente exibição; a necessidade de edição avançada fica para evolução.
+
+6) Estrutura interna de armazenamento do Card (decisão fechada)
+Você pediu explicitamente que o sistema armazene separadamente:
+6.1 Buckets do card
+* sourceData: dados que vêm da fonte de entrada (payload externo mapeado)
+* cardData.inputs: dados que o usuário preenche (campos editáveis do CardType)
+* cardData.outputs: dados calculados/gerados por sistema/automação
+* props: propriedades gerais (ex.: labels por board; e no futuro outros)
+* pluginData: dados internos de plugins de UI (se existirem)
+6.2 Regra de escrita por bucket (decisão fechada)
+* sourceData: escrito somente pelo IngressSource (readonly na UI)
+* inputs: escrito pelo usuário (e automação pode escrever se necessário)
+* outputs: escrito somente pelo sistema/automação (readonly na UI)
+* props: usuário e automação podem escrever
+* pluginData: plugin escreve (e registra histórico)
+
+7) Ingress: critério de atualização vs criação (decisão fechada)
+Você cravou o comportamento padrão:
+* Existe um critério pelo identificador do evento (externalEventId).
+* Se chegar um evento com o mesmo externalEventId: atualizar o card (ao invés de criar outro).
+* Se chegar um evento com externalEventId novo: criar um card novo.
+Isso vale “por padrão” e deve ser respeitado.
+POA: você não definiu explicitamente o que acontece se não vier externalEventId. Se quiser, pode ser rejeitar ou criar sempre; mas como você não determinou, fica aberto.
+
+8) Automações (gatilho → condição → ação)
+Você pediu que exista estrutura de automações configuráveis por tela (não via JSON manual), com:
+8.1 Conceitos
+* Gatilho (quando acontece)
+* Condição (se satisfaz)
+* Ação (o que faz)
+8.2 Exemplos citados
+* Gatilho: ao criar card
+* Gatilho: ao mover card
+* Gatilho: ao alterar um campo (field changed)
+* Condições baseadas em campos dinâmicos, respeitando o tipo (número, data, enum etc.)
+* Ações possíveis:
+    * mover card para outra coluna
+    * executar integração de saída (ex.: disparar WhatsApp/webhook/e-mail/BI)
+    * outras ações internas (ex.: atualizar campos, registrar histórico)
+8.3 UI obrigatória
+* Você não quer construir regras por JSON.
+* O sistema deve fornecer telas para configurar gatilho/condição/ação de maneira utilizável.
+
+9) Integrações de saída: MVP mínimo útil (decisão fechada)
+Você aceitou e pediu explicitamente o MVP com Webhook genérico configurável.
+9.1 Webhook genérico (características)
+* Selecionar URL
+* Configurar método HTTP (GET, POST, PUT, etc.)
+* Configurar body quando necessário
+* Configurar credencial básica (o básico)
+* Esse conector deve ser selecionável como “Ação” na automação.
+POA: você citou “BOR”; pelo contexto parece ser “Body”. Se “BOR” for outro item, precisa definir.
+
+10) Performance do Kanban: paginação por coluna (decisão fechada)
+Você determinou que:
+* Deve ser paginado por coluna.
+* Deve ser lazy load.
+* Pode ser rolagem infinita por coluna.
+* Deve existir um padrão do tipo:
+    * exibir “carregados/total” (somatório no header), mas o resultado é paginado.
+
+11) Labels / propriedades universais por board (decisão fechada para MVP)
+Você trouxe o exemplo de etiquetas e determinou:
+* Todo card pode ter etiqueta.
+* A lista de etiquetas é segregada por board (faz sentido por contexto).
+* Não fazer catálogo global/módulo por enquanto; isso fica para evolução.
+
+12) Linha de uso (como alguém opera o sistema no dia a dia)
+12.1 Preparação (admin/configurador)
+1. Criar módulo (se necessário).
+2. Montar árvore de navegação e associar folhas a boards.
+3. Criar board (colunas/fluxo).
+4. Criar CardType do board com fields e bindings.
+5. Configurar quais fields aparecem no card fechado (preview).
+6. Criar etiquetas do board.
+7. Configurar Fonte de Entrada (IngressSource) com schema do payload e externalEventId.
+8. Configurar automações do board (gatilho/condição/ação).
+9. Habilitar/Configurar conector de saída Webhook genérico (MVP).
+12.2 Operação (time)
+1. Evento externo chega (telemetria/cobrança/contato) e cria/atualiza card no board certo.
+2. Usuário vê card na coluna inicial.
+3. Usuário abre o card, vê dados da origem (readonly), preenche inputs do card, aplica etiquetas.
+4. Usuário move o card entre colunas.
+5. Automações podem disparar ações (mover, atualizar campos, chamar webhook).
+6. Histórico mostra tudo que foi feito.
+
+13) PONTOS_EM_ABERTO (POAs) — somente o que você não cravou explicitamente
+1. externalEventId obrigatório?Você definiu o comportamento “se tem o mesmo id, atualiza; se não tem, cria”.Mas não foi definido o comportamento quando o evento chega sem externalEventId.
+2. “BOR” no webhookVocê citou “BOR”; pelo contexto parece “Body”. Se for outro campo/conceito, precisa especificar.
+3. Quais ações internas mínimas além do webhook?Você citou mover card e disparar integrações. Outras ações internas (setField, addHistoryEvent) foram discutidas, mas se você quiser restringir o MVP a um conjunto mínimo, isso pode ser explicitado.
+
+Se você quiser, eu posso agora transformar este consolidado em:
+* Especificação de domínio com IDs e relacionamentos (sem inventar campos além do necessário), e/ou
+* Backlog com critérios de aceitação Given/When/Then exatamente derivado destas regras.
+Entendi. Vou reescrever isso como um documento auto-explicativo, com narrativa, contexto, “por que” das decisões, fluxo de ponta a ponta e só depois os modelos/regras. A ideia é alguém que nunca ouviu falar do assunto ler e falar: “ok, entendi pra que serve, como usa, como entra dado, como o time trabalha, e como o sistema escala”.
+
+1) Contexto e objetivo do sistema
+Você quer construir uma ferramenta central de trabalho para o time — um “centro de operações” — que organiza atividades em um Kanban e conecta o trabalho humano com os eventos dos sistemas periféricos da empresa (PopCarros).
+Na prática, hoje existem vários sistemas “gerando necessidade de ação”, por exemplo:
+* Telemetria do veículo detecta um padrão (ex.: excesso de velocidade) e alguém precisa analisar e agir.
+* Cobrança/financeiro detecta inadimplência e alguém precisa tratar o caso (contato, negociação, bloqueio, etc.).
+* Contato/educação decide que um cliente precisa receber orientação/seguimento e alguém precisa executar.
+* E assim por diante, com vários domínios diferentes.
+O problema típico é: cada área vira uma “ilha” com planilhas, e-mails, alertas, chats e ferramentas desconectadas. Você quer um lugar único onde:
+1. Tudo que vira trabalho vira card (e não “mais um alerta solto”).
+2. O time consegue ver fila, prioridade, gargalo e andamento.
+3. O time consegue executar (preencher dados, registrar decisão, anexar evidências).
+4. O sistema consegue automatizar o que faz sentido (mover card, atualizar campos, disparar integração).
+5. O sistema consegue integrar para fora (webhook, WhatsApp, BI, etc.) quando regras determinarem.
+Em resumo: é uma plataforma “hub” para converter eventos e demandas em execução operacional rastreável.
+
+2) Quem usa e para quê (personas)
+O sistema não é “só do dev” nem “só do gerente”. Ele é do time.
+* Operador / Analista (dia a dia)Entra no board, vê cards, abre, preenche campos, move entre colunas, registra decisões.
+* Líder / Coordenador / GerenteVê volume, gargalos, cards parados, cobra responsáveis, ajusta fluxo, cria regras simples e acompanha KPIs.
+* Admin/Configurador (TI / Produto / Ops)Cria boards, define tipos de card, configura fontes de entrada (ingress), mapeia payload, habilita conectores e define automações.
+Importante: o operador não deve ficar escrevendo JSON, nem criando regra por JSON. A configuração “técnica” fica para quem administra.
+
+3) Como o sistema se organiza mentalmente (a lógica do produto)
+Você descreveu três níveis principais de organização:
+3.1 Módulo
+Um módulo é um grande domínio/área do negócio (ex.: “Frota”, “Financeiro”, “Relacionamento”, “Vistoria”).Ele existe para separar responsabilidades e organizar a navegação.
+3.2 Árvore (projetos/subprojetos/contextos)
+Dentro do módulo, você pode ter uma árvore com N níveis (empresa → operação → região → time → processo → …).O objetivo é deixar o time navegar do macro para o micro até chegar no lugar onde o trabalho acontece.
+As folhas dessa árvore apontam para um Board.
+3.3 Board (o processo de trabalho)
+O Board é o coração operacional.Um board é um processo/jornada bem definido (“fila de trabalho”). Ex.:
+* “Telemetria — Alta velocidade”
+* “Cobrança — Atrasados 15+ dias”
+* “Vistoria — Revisão de fotos”
+* “Contato — Campanha educação”
+A regra principal aqui (para integridade): no MVP, um board trata um único tipo de card e recebe dados de uma fonte de entrada. Isso evita misturar coisas sem relação e torna o board legível.
+
+4) Linha do tempo de como as coisas acontecem (do evento ao trabalho concluído)
+Vou descrever o fluxo de ponta a ponta, do jeito que alguém de fora entende.
+Etapa A — Configuração inicial (admin faz uma vez)
+1. O admin cria um Board com colunas (o fluxo):Ex.: “Novo” → “Em análise” → “Em contato” → “Resolvido”
+2. O admin define um CardType para esse Board:Ex.: para telemetria, o card terá:
+    * campos de exibição: placa, velocidade, limite, data da ocorrência (vindos da origem)
+    * campos editáveis: “contatado?”, “observação”, “decisão”, “canal”
+    * campos calculados: “resultado” (output) etc.
+3. O admin configura uma Fonte de Entrada (IngressSource) desse board:Isso define:
+    * de qual sistema vem o evento
+    * qual é o identificador do evento (externalEventId)
+    * como mapear o payload para o card (para sourceData)
+4. O admin habilita os conectores de saída necessários:No MVP, pelo menos um Webhook genérico.
+5. (Opcional) O admin cria Automações do board:Ex.: quando card criado e condição X, mover, marcar label, chamar webhook, etc.
+Etapa B — Um sistema externo detecta algo e envia um evento
+Ex.: telemetria detectou alta velocidade.
+O sistema externo faz POST /ingress/{sourceKey}/events com:
+* externalEventId
+* payload (dados do evento)
+* (opcional) refs como vehicleId, customerId
+Etapa C — O hub transforma evento em card (ou atualiza)
+Quando o evento chega, o hub faz duas coisas:
+1. Idempotência por evento
+    * Se já existe card para esse externalEventId naquela fonte: atualiza
+    * Se não existe: cria um novo card
+2. Grava dados no lugar certo
+    * Dados da origem vão para sourceData (somente leitura)
+    * Nada do operador é sobrescrito
+E sempre registra no histórico:
+* INGRESS_RECEIVED (para auditoria e rastreabilidade)
+Etapa D — O time opera o card
+O operador vê o card aparecer na coluna inicial (“Novo”), com preview configurado.
+Ele:
+* abre o card
+* vê os dados da origem (readonly)
+* preenche campos do card (inputs)
+* adiciona labels do board (ex.: “crítico”)
+* move o card para a próxima coluna
+Cada ação gera histórico (audit):
+* card movido, campo alterado, etc.
+Etapa E — Automação e integrações entram em cena
+Quando algo acontece (mover coluna, mudar campo, criar card), pode disparar automação:
+* Gatilho: “Ao entrar na coluna ‘Em contato’”
+* Condição: “contatado = true”
+* Ação: “Enviar webhook para sistema X” ou “Atualizar campo resultado” ou “Mover card”
+O objetivo da automação é:
+* reduzir trabalho repetitivo
+* impor disciplina de processo
+* disparar integração para fora com governança
+Etapa F — Conclusão e rastreio
+No final, o card chega em “Resolvido” (ou equivalente).O histórico do card mostra tudo que aconteceu: origem, edições, decisões e integrações executadas.
+
+5) Por que as decisões estruturais existem (e o custo de ignorá-las)
+5.1 Por que “1 board = 1 tipo de card” no MVP
+Sem isso, você cai no caos:
+* cards com formatos diferentes no mesmo board
+* automações quebrando porque um card não tem o campo que outro tem
+* time não entende “o que é esse board” (perde contexto)
+Você ainda pode ter N boards por módulo. Isso dá flexibilidade e mantém integridade.
+5.2 Por que separar sourceData vs inputs/outputs
+Esse é um ponto crítico: sem separação, você destrói a confiabilidade.
+* sourceData é “verdade da origem”: telemetria, financeiro, etc.
+* inputs é “trabalho humano”: observação, decisão, status interno, etc.
+* outputs é “resultado do sistema”: calculado/derivado.
+Se misturar, um operador pode “editar” um dado que deveria ser prova/auditoria, e você perde rastreabilidade.
+5.3 Por que o operador não mexe com JSON
+Porque operação não deve depender de engenharia.
+* JSON é para contrato interno
+* UI Builder é para uso humano
+Esse produto só escala se o time conseguir configurar e operar sem código.
+5.4 Por que “Plugin” é só UI do card
+Você decidiu isso corretamente para evitar confusão de responsabilidade:
+* plugin é “um painel do card” (ex.: videoconferência)
+* integrações de saída são ações do motor (webhook, WhatsApp etc.)
+* ingress é entrada
+Misturar esses conceitos vira um produto impossível de manter.
+
+6) O que é configurável e onde (mapa de configuração)
+6.1 No Board
+* Colunas do fluxo
+* Labels do board
+* Automações do board
+* (MVP) CardType fixo do board
+* (MVP) IngressSource fixo do board
+6.2 No CardType
+* Campos de UI (editáveis e readonly)
+* Formatação por tipo
+* Preview do card (o que aparece fechado)
+* Plugins de UI associados (se existirem)
+6.3 No IngressSource (fonte de entrada)
+* SourceKey (origem)
+* Onde está externalEventId no payload
+* Schema do payload (contrato)
+* Mapping payload → sourceData
+* Regras de update:
+    * se mesmo externalEventId: atualiza sourceData
+    * se novo: cria card
+6.4 No ActionConnector (integrações de saída)
+* Catálogo habilitado/desabilitado
+* Configuração do conector (URL, auth etc.)
+* Inputs requeridos (para UI montar formulário na automação)
+
+7) Webhook genérico (MVP mínimo útil)
+O que ele resolve
+Com um webhook genérico, você consegue integrar o hub com praticamente qualquer sistema:
+* CRM
+* BI
+* filas internas
+* serviços próprios
+* n8n
+* Kommo
+* etc.
+Sem precisar implementar conectores específicos no começo.
+Configurações do webhook
+* URL
+* Método (GET/POST/PUT/PATCH/DELETE)
+* Headers
+* Auth simples:
+    * none
+    * bearer token
+    * api key em header
+* Body template (para métodos com body)
+* Timeout
+* (opcional) retries simples
+Como montar o body
+Você pode oferecer duas formas no MVP:
+1. Snapshot pronto“Enviar envelope do card”:
+    * cardId, boardId, columnId
+    * sourceData
+    * inputs
+    * outputs
+    * props
+    * contexto do evento (gatilho)
+2. Template com variáveisEx.: {{source.vehicle.plate}} etc.
+Recomendação: começar com snapshot (rápido) e depois evoluir templates.
+
+8) Modelo de domínio (explicado de modo legível)
+8.1 Entidades organizacionais
+* Module: agrupador macro
+* Tree/TreeNode: navegação por contexto até chegar em um board
+* Board: processo operacional (kanban)
+* Column: etapa do fluxo
+* BoardLabel: catálogo de etiquetas por board
+8.2 Entidades operacionais
+* Card: unidade de trabalho
+* CardEvent: histórico/auditoria
+* CardType: define como o card é apresentado e editado (fields + binding)
+8.3 Entrada e saída
+* IngressSource: recebe evento externo e cria/atualiza card
+* ActionConnector: executa integração externa via automação (webhook etc.)
+* AutomationRule: gatilho/condição/ação por board
+* Plugin (UI): painel dentro do card (associado ao CardType)
+
+9) Campo (Field) e bindingRef — o que isso significa na prática
+Um “Field” é um item da tela do card.Ele tem um lugar de onde vem o dado (bindingRef) e um modo (editable/readonly).
+Exemplos fáceis:
+* “Criado em” → system.createdAt (readonly)
+* “Placa” → source.vehicle.plate (readonly)
+* “Observação” → inputs.observacao (editable)
+* “Resultado” → outputs.resultado (readonly)
+* “Labels” → props.labels (editable)
+Isso torna o card autoexplicativo para quem usa e dá consistência para automações.
+
+10) Regras de performance (por que e como)
+Telemetria e financeiro podem gerar milhares de cards.Se o board carregar tudo, vai travar.
+Por isso:
+* cada coluna carrega cards por paginação
+* lazy load / scroll infinito por coluna
+* header mostra “carregados/total”
+Isso é requisito de MVP, não “otimização”.
+
+11) Checklist do MVP (em ordem lógica de implantação)
+1. Navegação: módulos + árvore + abrir board
+2. Board Kanban: colunas + drag/drop + preview do card
+3. Card modal: fields com binding + editar inputs + labels + histórico
+4. CardType Builder: configurar fields + preview + plugins (somente UI)
+5. Labels por board (CRUD)
+6. IngressSource: endpoint + idempotência + mapping payload → sourceData
+7. Automation Builder: triggers/conditions/actions mínimos
+8. ActionConnector: webhook genérico configurável + invokeConnector
+9. Paginação/lazy load por coluna + filtros server-side
+
+12) Pontos ainda abertos (poucos, mas existem)
+1. externalEventId obrigatório?Tecnicamente é o padrão mais seguro (sem isso você cria duplicatas).Se você quiser aceitar sem ID, precisa definir fallback (e quase sempre dá ruim em volume).
+2. “BOR”Você citou “BOR”; eu tratei como Body do webhook. Se “BOR” significar outra coisa, eu ajusto o conector.
+3. Template de body do webhookVocê quer começar com “snapshot sempre” ou permitir template variável já no MVP?(Eu recomendo snapshot no MVP e template no MVP2.)
+
+Se você quiser, o próximo artefato mais útil é eu transformar isso em backlog completo (épicos + histórias + critérios Given/When/Then) já com:
+* endpoints
+* regras de idempotência
+* lazy load por coluna
+* webhook genérico (UI e execução)
+* e o contrato dos bindingRef (source/inputs/outputs/props/system).
