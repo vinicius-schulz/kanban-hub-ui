@@ -1,0 +1,125 @@
+kanban-hub-ui/
+├── artefatos
+│   └── requisitos preliminares.txt
+├── src
+│   ├── app
+│   │   ├── bootstrap
+│   │   │   └── initApp.ts
+│   │   ├── config
+│   │   │   ├── constants.ts
+│   │   │   └── env.ts
+│   │   ├── providers
+│   │   │   └── AppProviders.tsx
+│   │   ├── routes
+│   │   │   ├── index.tsx
+│   │   │   └── routePaths.ts
+│   │   ├── store
+│   │   │   ├── index.ts
+│   │   │   ├── rootReducer.ts
+│   │   │   └── typedHooks.ts
+│   │   └── index.ts
+│   ├── core
+│   │   ├── contracts
+│   │   │   └── ILogger.ts
+│   │   ├── errors
+│   │   │   └── AppError.ts
+│   │   └── utils
+│   │       └── guard.ts
+│   ├── infra
+│   │   ├── di
+│   │   │   └── container.ts
+│   │   └── http
+│   │       └── apiClient.ts
+│   ├── modules
+│   │   ├── _shared
+│   │   │   ├── hooks
+│   │   │   │   └── useAppInit.ts
+│   │   │   ├── styles
+│   │   │   │   └── theme.ts
+│   │   │   ├── types
+│   │   │   │   └── index.ts
+│   │   │   └── ui
+│   │   │       ├── LoadingState.tsx
+│   │   │       └── PageLayout.tsx
+│   │   ├── admin
+│   │   │   ├── application
+│   │   │   │   └── .gitkeep
+│   │   │   ├── domain
+│   │   │   │   └── .gitkeep
+│   │   │   ├── infra
+│   │   │   │   └── .gitkeep
+│   │   │   ├── presentation
+│   │   │   │   └── .gitkeep
+│   │   │   └── .gitkeep
+│   │   ├── auth
+│   │   │   ├── application
+│   │   │   │   └── .gitkeep
+│   │   │   ├── domain
+│   │   │   │   └── .gitkeep
+│   │   │   ├── infra
+│   │   │   │   └── .gitkeep
+│   │   │   ├── presentation
+│   │   │   │   └── .gitkeep
+│   │   │   └── .gitkeep
+│   │   ├── boards
+│   │   │   ├── application
+│   │   │   │   └── .gitkeep
+│   │   │   ├── domain
+│   │   │   │   └── .gitkeep
+│   │   │   ├── infra
+│   │   │   │   └── .gitkeep
+│   │   │   ├── presentation
+│   │   │   │   └── .gitkeep
+│   │   │   └── .gitkeep
+│   │   ├── healthcheck
+│   │   │   ├── application
+│   │   │   │   └── useCases
+│   │   │   │       └── getHealthStatus.ts
+│   │   │   ├── domain
+│   │   │   │   ├── entities
+│   │   │   │   │   └── HealthStatus.ts
+│   │   │   │   └── ports
+│   │   │   │       └── HealthRepository.ts
+│   │   │   ├── infra
+│   │   │   │   └── api
+│   │   │   │       └── healthHttpRepository.ts
+│   │   │   └── presentation
+│   │   │       ├── components
+│   │   │       │   └── HealthCard.tsx
+│   │   │       ├── pages
+│   │   │       │   └── HealthPage.tsx
+│   │   │       └── state
+│   │   │           ├── healthApi.ts
+│   │   │           ├── healthSlice.ts
+│   │   │           └── selectors.ts
+│   │   └── modules
+│   │       ├── application
+│   │       │   └── .gitkeep
+│   │       ├── domain
+│   │       │   └── .gitkeep
+│   │       ├── infra
+│   │       │   └── .gitkeep
+│   │       ├── presentation
+│   │       │   └── .gitkeep
+│   │       └── .gitkeep
+│   ├── main.tsx
+│   └── vite-env.d.ts
+├── .eslintrc.cjs
+├── .gitignore
+├── .prettierrc
+├── README.md
+├── architecture.md
+├── assumptions.md
+├── boilerplate.plan.json
+├── code.bundle.txt
+├── index.html
+├── package.json
+├── patch.json
+├── questions.md
+├── repo.tree.txt
+├── spec.json
+├── spec.md
+├── spec.resolved.json
+├── tsconfig.json
+├── validation.md
+└── vite.config.ts

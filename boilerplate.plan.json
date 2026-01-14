@@ -1,0 +1,73 @@
+{
+  "generation_order": [
+    {
+      "step": 1,
+      "files": [
+        "package.json",
+        "tsconfig.json",
+        "vite.config.ts",
+        ".eslintrc.cjs",
+        ".prettierrc",
+        "index.html",
+        "src/vite-env.d.ts"
+      ]
+    },
+    {
+      "step": 2,
+      "files": [
+        "src/app/bootstrap/initApp.ts",
+        "src/app/providers/AppProviders.tsx",
+        "src/app/routes/index.tsx",
+        "src/app/routes/routePaths.ts",
+        "src/app/store/index.ts",
+        "src/app/store/rootReducer.ts",
+        "src/app/store/typedHooks.ts",
+        "src/app/config/env.ts",
+        "src/app/config/constants.ts",
+        "src/app/index.ts",
+        "src/core/contracts/ILogger.ts",
+        "src/core/errors/AppError.ts",
+        "src/core/utils/guard.ts",
+        "src/infra/http/apiClient.ts",
+        "src/infra/di/container.ts",
+        "src/modules/_shared/ui/PageLayout.tsx",
+        "src/modules/_shared/ui/LoadingState.tsx",
+        "src/modules/_shared/hooks/useAppInit.ts",
+        "src/modules/_shared/styles/theme.ts",
+        "src/modules/_shared/types/index.ts",
+        "src/modules/healthcheck/domain/entities/HealthStatus.ts",
+        "src/modules/healthcheck/domain/ports/HealthRepository.ts",
+        "src/modules/healthcheck/application/useCases/getHealthStatus.ts",
+        "src/modules/healthcheck/infra/api/healthHttpRepository.ts",
+        "src/modules/healthcheck/presentation/state/healthApi.ts",
+        "src/modules/healthcheck/presentation/state/healthSlice.ts",
+        "src/modules/healthcheck/presentation/state/selectors.ts",
+        "src/modules/healthcheck/presentation/components/HealthCard.tsx",
+        "src/modules/healthcheck/presentation/pages/HealthPage.tsx",
+        "src/main.tsx"
+      ]
+    },
+    {
+      "step": 3,
+      "files": [
+        "architecture.md",
+        "repo.tree.txt",
+        "boilerplate.plan.json",
+        "code.bundle.txt"
+      ]
+    }
+  ],
+  "scaffolded_modules": [
+    "auth",
+    "modules",
+    "boards",
+    "admin"
+  ],
+  "implemented_modules": [
+    "healthcheck"
+  ],
+  "notes": [
+    "READY_FOR_IMPLEMENTATION=false: módulos além do healthcheck ficam apenas scaffolded.",
+    "Mock HTTP: VITE_API_MOCK=true retorna resposta para /health."
+  ]
+}
