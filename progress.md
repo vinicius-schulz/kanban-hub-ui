@@ -10,10 +10,10 @@
 - Página de módulos com dados mock.
 
 ## Pending
-- Rodar gates: npm run typecheck, npm run lint, npm run build.
+- Rodar gates: npm run lint, npm run build (typecheck falhou neste ciclo por dependências ausentes).
 
 ## Last runner result
-- Não executado neste ciclo.
+- npm run typecheck (falhou: dependências não instaladas / módulos não encontrados).
 
 ## Next action
-- Executar os gates e revisar a navegação das rotas.
+- Instalar dependências (npm install) e executar os gates restantes.

@@ -1,5 +1,5 @@
 {
   "increment_id": "INC-001",
   "mode": "IMPLEMENT",
-  "reason": "progress.md ausente e nenhuma evidência de execução de INC-001; INC-000 já possui contratos/fixtures no repo, então o próximo incremento pendente é o INC-001. Sem runner.log/gate.summary com falhas, portanto modo IMPLEMENT."
+  "reason": "progress.md aponta INC-001 como incremento atual pendente; não há runner.log.txt ou gate.summary.json com falhas, então o modo permanece IMPLEMENT."
 }

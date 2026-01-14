@@ -1,47 +1,25 @@
 {
   "increment_id": "INC-001",
   "touched_files": [
-    "src/app/routes/index.tsx",
-    "src/app/routes/routePaths.ts",
-    "src/app/store/rootReducer.ts",
-    "src/modules/auth/presentation/components/AuthGuard.tsx",
-    "src/modules/auth/presentation/components/AuthRedirect.tsx",
-    "src/modules/auth/presentation/pages/LoginPage.tsx",
-    "src/modules/auth/presentation/state/authSlice.ts",
-    "src/modules/auth/presentation/state/selectors.ts",
-    "src/modules/modules/presentation/pages/ModulesPage.tsx",
-    "src/modules/modules/presentation/state/modulesSlice.ts",
-    "src/modules/modules/presentation/state/selectors.ts"
+    "increment.selected.json",
+    "progress.md",
+    "change.log.md",
+    "trace.delta.json",
+    "open.issues.md",
+    "code.patch.diff"
   ],
   "trace": [
     {
-      "workplan_item": "INC-001 / ST-001",
-      "spec_refs": ["RF-001", "UC-001", "SCR-001", "RTE-001"],
+      "workplan_item": "INC-001 / gates",
+      "spec_refs": [],
       "files": [
-        "src/modules/auth/presentation/pages/LoginPage.tsx",
-        "src/modules/auth/presentation/state/authSlice.ts",
-        "src/modules/auth/presentation/components/AuthGuard.tsx",
-        "src/modules/auth/presentation/components/AuthRedirect.tsx"
-      ]
-    },
-    {
-      "workplan_item": "INC-001 / ST-002",
-      "spec_refs": ["RF-002", "UC-001", "SCR-002", "RTE-002"],
-      "files": [
-        "src/modules/modules/presentation/pages/ModulesPage.tsx",
-        "src/modules/modules/presentation/state/modulesSlice.ts",
-        "src/modules/modules/presentation/state/selectors.ts"
-      ]
-    },
-    {
-      "workplan_item": "INC-001 / routes",
-      "spec_refs": ["RTE-001", "RTE-002"],
-      "files": [
-        "src/app/routes/index.tsx",
-        "src/app/routes/routePaths.ts"
+        "progress.md",
+        "change.log.md"
       ]
     }
   ],
   "safe_defaults": [],
-  "open_issues": []
+  "open_issues": [
+    "npm run typecheck falhou por dependências não instaladas (node_modules ausente); necessário executar npm install antes de rodar gates."
+  ]
 }
