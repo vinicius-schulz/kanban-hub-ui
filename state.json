@@ -1,0 +1,36 @@
+{
+  "current_increment_id": "INC-001",
+  "increments": {
+    "INC-000": {
+      "status": "DONE",
+      "done": ["Contratos de domínio e fixtures base"],
+      "pending": [],
+      "notes": "Base de domínio já presente no repositório.",
+      "needed_context": []
+    },
+    "INC-001": {
+      "status": "IN_PROGRESS",
+      "done": [
+        "Tela de login mock com sessão persistida",
+        "Guard simples para rotas autenticadas",
+        "Listagem de módulos mock"
+      ],
+      "pending": ["Rodar lint/typecheck/build"],
+      "notes": "Implementação concluída aguardando gates.",
+      "needed_context": []
+    }
+  },
+  "last_run": {
+    "mode": "IMPLEMENT",
+    "gates": [
+      {"name": "lint", "status": "FAIL"},
+      {"name": "typecheck", "status": "FAIL"},
+      {"name": "build", "status": "FAIL"}
+    ],
+    "runner_commands_to_execute_next": [
+      "npm run lint",
+      "npm run typecheck",
+      "npm run build"
+    ]
+  }
+}
