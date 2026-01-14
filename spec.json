@@ -1,0 +1,1152 @@
+{
+  "meta": {
+    "schema_version": "1.1",
+    "generated_by": "AGENT_1",
+    "generated_at": null,
+    "output_mode": "filesystem",
+    "id_policy": "first-occurrence;append-only",
+    "files": null
+  },
+  "sources": [
+    {
+      "source_id": "SRC-001",
+      "type": "doc",
+      "name": "Documentação Consolidada Final — Hub Kanban Configurável e Integrável (MVP)",
+      "date": null,
+      "notes": "Texto estruturado com seções numeradas.",
+      "repo": null,
+      "branch": null,
+      "commit": null
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Kanban",
+      "definition": "Quadro Kanban onde o trabalho acontece com colunas configuráveis e cards movidos manualmente.",
+      "synonyms": ["board", "quadro"],
+      "canonical": true,
+      "canonical_term": "Kanban",
+      "sources": [{ "source_id": "SRC-001", "reference": "§3.3, §11" }],
+      "confidence": "high"
+    },
+    {
+      "term": "Card",
+      "definition": "Unidade de trabalho criada manualmente ou via ingress, com dados estruturados em buckets e histórico.",
+      "synonyms": ["cartão"],
+      "canonical": true,
+      "canonical_term": "Card",
+      "sources": [{ "source_id": "SRC-001", "reference": "§5, §9" }],
+      "confidence": "high"
+    },
+    {
+      "term": "CardType",
+      "definition": "Contrato de exibição e campos do card, com fields dinâmicos e preview configurável.",
+      "synonyms": ["tipo de card"],
+      "canonical": true,
+      "canonical_term": "CardType",
+      "sources": [{ "source_id": "SRC-001", "reference": "§3.3, §7" }],
+      "confidence": "high"
+    },
+    {
+      "term": "IngressSource",
+      "definition": "Configuração de entrada que permite criar/atualizar cards a partir de objetos externos.",
+      "synonyms": ["fonte de entrada"],
+      "canonical": true,
+      "canonical_term": "IngressSource",
+      "sources": [{ "source_id": "SRC-001", "reference": "§9" }],
+      "confidence": "high"
+    },
+    {
+      "term": "Plugin",
+      "definition": "Componente visual do card, implementado no código e registrado no banco para governança.",
+      "synonyms": ["componente"],
+      "canonical": true,
+      "canonical_term": "Plugin",
+      "sources": [{ "source_id": "SRC-001", "reference": "§8" }],
+      "confidence": "high"
+    },
+    {
+      "term": "Webhook",
+      "definition": "Conector de saída configurável com template de variáveis, executado manualmente no MVP.",
+      "synonyms": ["conector"],
+      "canonical": true,
+      "canonical_term": "Webhook",
+      "sources": [{ "source_id": "SRC-001", "reference": "§10" }],
+      "confidence": "high"
+    },
+    {
+      "term": "Label",
+      "definition": "Etiqueta aplicada a cards, segregada por board.",
+      "synonyms": ["tag", "etiqueta"],
+      "canonical": true,
+      "canonical_term": "Label",
+      "sources": [{ "source_id": "SRC-001", "reference": "§12" }],
+      "confidence": "high"
+    },
+    {
+      "term": "Módulo",
+      "definition": "Grande área/processo do negócio que contém uma árvore de navegação.",
+      "synonyms": ["módulo"],
+      "canonical": true,
+      "canonical_term": "Módulo",
+      "sources": [{ "source_id": "SRC-001", "reference": "§3.1-3.2" }],
+      "confidence": "high"
+    }
+  ],
+  "actors": [
+    {
+      "actor_id": "ACT-001",
+      "name": "Operacional",
+      "responsibilities": [
+        "Abrir board e operar cards",
+        "Editar inputs do processo",
+        "Mover cards entre colunas",
+        "Aplicar labels",
+        "Consultar histórico"
+      ],
+      "permissions": [
+        "Acessar módulos/boards permitidos",
+        "Editar inputs",
+        "Mover cards",
+        "Aplicar labels",
+        "Ver histórico"
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§2.1, §14.4" }],
+      "confidence": "high"
+    },
+    {
+      "actor_id": "ACT-002",
+      "name": "Gestor/Líder",
+      "responsibilities": [
+        "Acompanhar volume e andamento",
+        "Operar cards",
+        "Revisar histórico"
+      ],
+      "permissions": ["Operar cards", "Ver histórico"],
+      "sources": [{ "source_id": "SRC-001", "reference": "§2.2, §14.4" }],
+      "confidence": "medium"
+    },
+    {
+      "actor_id": "ACT-003",
+      "name": "Administrador",
+      "responsibilities": [
+        "Cadastrar módulos/árvore/boards/colunas/labels",
+        "Configurar CardTypes e Fields",
+        "Configurar IngressSources",
+        "Registrar plugins",
+        "Configurar conectores webhook",
+        "Gerir usuários e permissões"
+      ],
+      "permissions": [
+        "CRUD de módulos",
+        "CRUD de árvore",
+        "CRUD de boards",
+        "CRUD de colunas",
+        "CRUD de labels",
+        "CRUD de CardTypes/Fields",
+        "CRUD de IngressSources",
+        "CRUD de plugins",
+        "CRUD de conectores",
+        "CRUD de usuários/permissões"
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§2.3, §13, §14.3-14.4" }],
+      "confidence": "high"
+    },
+    {
+      "actor_id": "ACT-004",
+      "name": "Sistema Externo",
+      "responsibilities": ["Enviar eventos/objetos para criar/atualizar cards"],
+      "permissions": [],
+      "sources": [{ "source_id": "SRC-001", "reference": "§1, §9" }],
+      "confidence": "medium"
+    }
+  ],
+  "use_cases": [
+    {
+      "uc_id": "UC-001",
+      "title": "Login e acesso inicial",
+      "primary_actor_id": "ACT-001",
+      "goal": "Autenticar e acessar a listagem de módulos",
+      "preconditions": ["Usuário existente"],
+      "postconditions": ["Sessão/token ativo"],
+      "main_flow": [
+        { "step": 1, "action": "Usuário faz login" },
+        { "step": 2, "action": "Sistema exibe listagem de módulos permitidos" }
+      ],
+      "alt_flows": [],
+      "exceptions": [{ "condition": "Credenciais inválidas", "result": "Acesso negado (não detalhado)" }],
+      "screen_id": "SCR-001",
+      "route_id": "RTE-001",
+      "sources": [{ "source_id": "SRC-001", "reference": "§4.1, §14" }],
+      "confidence": "high"
+    },
+    {
+      "uc_id": "UC-002",
+      "title": "Navegar módulos e abrir board",
+      "primary_actor_id": "ACT-001",
+      "goal": "Navegar a árvore do módulo e abrir o kanban do board",
+      "preconditions": ["Usuário autenticado", "Módulos permitidos"],
+      "postconditions": ["Board aberto na área principal"],
+      "main_flow": [
+        { "step": 1, "action": "Usuário abre um módulo" },
+        { "step": 2, "action": "Sistema mostra árvore à esquerda e área principal" },
+        { "step": 3, "action": "Usuário clica em folha da árvore" },
+        { "step": 4, "action": "Sistema carrega o kanban do board" }
+      ],
+      "alt_flows": [],
+      "exceptions": [{ "condition": "Módulo sem permissão", "result": "Acesso negado (não detalhado)" }],
+      "screen_id": "SCR-003",
+      "route_id": "RTE-003",
+      "sources": [{ "source_id": "SRC-001", "reference": "§4.2-4.4, §15" }],
+      "confidence": "high"
+    },
+    {
+      "uc_id": "UC-003",
+      "title": "Operar Kanban (cards)",
+      "primary_actor_id": "ACT-001",
+      "goal": "Mover cards, editar inputs/props e consultar histórico",
+      "preconditions": ["Board aberto"],
+      "postconditions": ["Card atualizado e histórico registrado"],
+      "main_flow": [
+        { "step": 1, "action": "Usuário visualiza cards nas colunas" },
+        { "step": 2, "action": "Usuário abre card em modal" },
+        { "step": 3, "action": "Usuário edita inputs e props" },
+        { "step": 4, "action": "Usuário move card entre colunas" },
+        { "step": 5, "action": "Sistema registra histórico" }
+      ],
+      "alt_flows": [],
+      "exceptions": [{ "condition": "Permissão insuficiente", "result": "Ação bloqueada (não detalhado)" }],
+      "screen_id": "SCR-004",
+      "route_id": "RTE-004",
+      "sources": [{ "source_id": "SRC-001", "reference": "§4.4-6, §11, §13.6" }],
+      "confidence": "high"
+    },
+    {
+      "uc_id": "UC-004",
+      "title": "Configurar board",
+      "primary_actor_id": "ACT-003",
+      "goal": "Configurar board no contexto correto",
+      "preconditions": ["Usuário com permissão", "Board aberto"],
+      "postconditions": ["Configurações salvas"],
+      "main_flow": [
+        { "step": 1, "action": "Usuário acessa engrenagem do board" },
+        { "step": 2, "action": "Usuário configura colunas, labels, CardType, IngressSource e webhook" }
+      ],
+      "alt_flows": [],
+      "exceptions": [{ "condition": "Sem permissão", "result": "Acesso negado (não detalhado)" }],
+      "screen_id": "SCR-004",
+      "route_id": "RTE-004",
+      "sources": [{ "source_id": "SRC-001", "reference": "§4.5, §13.1-13.5" }],
+      "confidence": "high"
+    },
+    {
+      "uc_id": "UC-005",
+      "title": "Administrar cadastros",
+      "primary_actor_id": "ACT-003",
+      "goal": "Manter cadastros estruturais e de configuração",
+      "preconditions": ["Usuário admin autenticado"],
+      "postconditions": ["Dados cadastrais atualizados"],
+      "main_flow": [
+        { "step": 1, "action": "Admin acessa telas de administração" },
+        { "step": 2, "action": "Admin executa CRUD dos cadastros" }
+      ],
+      "alt_flows": [],
+      "exceptions": [],
+      "screen_id": "SCR-005",
+      "route_id": "RTE-006",
+      "sources": [{ "source_id": "SRC-001", "reference": "§13, §15" }],
+      "confidence": "high"
+    },
+    {
+      "uc_id": "UC-006",
+      "title": "Ingestão de evento externo",
+      "primary_actor_id": "ACT-004",
+      "goal": "Criar/atualizar card via IngressSource",
+      "preconditions": ["IngressSource configurado"],
+      "postconditions": ["Card criado/atualizado e histórico/log registrado"],
+      "main_flow": [
+        { "step": 1, "action": "Evento chega ao IngressSource" },
+        { "step": 2, "action": "Sistema verifica externalObjectIdPath" },
+        { "step": 3, "action": "Com externalId, atualiza card; sem externalId, cria novo" },
+        { "step": 4, "action": "Sistema registra histórico/warning" }
+      ],
+      "alt_flows": [],
+      "exceptions": [
+        { "condition": "externalObjectIdPath ausente ou valor inexistente", "result": "Cria card e registra warning sem bloquear" }
+      ],
+      "screen_id": null,
+      "route_id": null,
+      "sources": [{ "source_id": "SRC-001", "reference": "§9" }],
+      "confidence": "high"
+    },
+    {
+      "uc_id": "UC-007",
+      "title": "Executar webhook manual",
+      "primary_actor_id": "ACT-001",
+      "goal": "Acionar conector webhook manualmente no card",
+      "preconditions": ["Conector configurado", "Usuário com permissão"],
+      "postconditions": ["Requisição enviada e histórico registrado"],
+      "main_flow": [
+        { "step": 1, "action": "Usuário abre card" },
+        { "step": 2, "action": "Usuário seleciona conector webhook" },
+        { "step": 3, "action": "Usuário executa a ação manual" },
+        { "step": 4, "action": "Sistema registra histórico/warnings" }
+      ],
+      "alt_flows": [],
+      "exceptions": [
+        { "condition": "Variável inexistente no template", "result": "Substitui por null e registra warning" }
+      ],
+      "screen_id": "SCR-004",
+      "route_id": "RTE-004",
+      "sources": [{ "source_id": "SRC-001", "reference": "§10" }],
+      "confidence": "high"
+    }
+  ],
+  "functional_requirements": [
+    {
+      "rf_id": "RF-001",
+      "statement": "O sistema deve permitir login e manter sessão/token ativo para acesso ao sistema.",
+      "priority": "Must",
+      "related_use_cases": ["UC-001"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Usuário submete credenciais",
+        "input": null,
+        "output": "Sessão/token criado",
+        "error_case": "Credenciais inválidas (não detalhado)"
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§14" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-002",
+      "statement": "O sistema deve listar módulos permitidos na tela inicial após login.",
+      "priority": "Must",
+      "related_use_cases": ["UC-001"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Login concluído",
+        "input": null,
+        "output": "Listagem de módulos por permissão",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§4.1" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-003",
+      "statement": "O sistema deve exibir a árvore do módulo à esquerda e a área principal à direita ao abrir um módulo.",
+      "priority": "Must",
+      "related_use_cases": ["UC-002"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Usuário abre módulo",
+        "input": null,
+        "output": "Árvore à esquerda e área principal à direita",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§4.2" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-004",
+      "statement": "O sistema deve carregar o kanban do board ao selecionar uma folha da árvore.",
+      "priority": "Must",
+      "related_use_cases": ["UC-002"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Usuário seleciona folha",
+        "input": null,
+        "output": "Kanban do board carregado",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§4.3" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-005",
+      "statement": "O sistema deve permitir mover cards entre colunas via drag & drop e persistir a posição.",
+      "priority": "Must",
+      "related_use_cases": ["UC-003"],
+      "related_business_rules": ["RN-006"],
+      "acceptance_minimum": {
+        "trigger": "Usuário move card",
+        "input": null,
+        "output": "Posição persistida",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§4.4, §11" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-006",
+      "statement": "O card aberto deve exibir seções de Dados de Origem, Inputs, Outputs, Props, Plugins e Histórico.",
+      "priority": "Must",
+      "related_use_cases": ["UC-003"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Usuário abre card",
+        "input": null,
+        "output": "Seções exibidas no modal",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§5.2" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-007",
+      "statement": "O sistema deve separar dados do card em buckets sourceData, cardData.inputs, cardData.outputs, props e pluginData.",
+      "priority": "Must",
+      "related_use_cases": ["UC-003"],
+      "related_business_rules": ["RN-002"],
+      "acceptance_minimum": {
+        "trigger": "Criação/edição de card",
+        "input": null,
+        "output": "Dados armazenados nos buckets definidos",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§5.3" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-008",
+      "statement": "O sistema deve manter histórico estruturado para eventos do card com type, summary, payload, createdAt e createdBy.",
+      "priority": "Must",
+      "related_use_cases": ["UC-003"],
+      "related_business_rules": ["RN-003"],
+      "acceptance_minimum": {
+        "trigger": "Ação relevante no card",
+        "input": null,
+        "output": "Evento registrado no histórico",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§6.1" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-009",
+      "statement": "O sistema deve permitir configurar um board via engrenagem com colunas, labels, CardType, IngressSource e conector webhook.",
+      "priority": "Must",
+      "related_use_cases": ["UC-004"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Usuário acessa engrenagem do board",
+        "input": null,
+        "output": "Configurações disponíveis para edição",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§4.5" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-010",
+      "statement": "O sistema deve permitir CRUD de módulos, árvore, boards, colunas e labels.",
+      "priority": "Must",
+      "related_use_cases": ["UC-005"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Admin acessa telas de cadastros",
+        "input": null,
+        "output": "Operações CRUD disponíveis",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§13.1" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-011",
+      "statement": "O sistema deve permitir CRUD de CardTypes e Fields com configuração de bindingRef, tipo, modo e flags de exibição.",
+      "priority": "Must",
+      "related_use_cases": ["UC-005"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Admin acessa cadastro de CardTypes",
+        "input": null,
+        "output": "CardType/Fields configuráveis",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§7.2, §13.2" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-012",
+      "statement": "O sistema deve permitir CRUD de IngressSources com alias, schema, mapping e externalObjectIdPath opcional.",
+      "priority": "Must",
+      "related_use_cases": ["UC-005"],
+      "related_business_rules": ["RN-005"],
+      "acceptance_minimum": {
+        "trigger": "Admin acessa cadastro de IngressSources",
+        "input": null,
+        "output": "IngressSource configurável",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§9.2, §13.3" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-013",
+      "statement": "O sistema deve permitir registrar plugins no banco com key, nome, versão e status.",
+      "priority": "Should",
+      "related_use_cases": ["UC-005"],
+      "related_business_rules": ["RN-007"],
+      "acceptance_minimum": {
+        "trigger": "Admin acessa registro de plugins",
+        "input": null,
+        "output": "Plugin registrado",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§8.3, §13.4" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-014",
+      "statement": "O sistema deve permitir CRUD de conectores webhook e configuração de URL/método/auth/headers/body-template.",
+      "priority": "Must",
+      "related_use_cases": ["UC-005"],
+      "related_business_rules": ["RN-008"],
+      "acceptance_minimum": {
+        "trigger": "Admin acessa cadastro de conectores",
+        "input": null,
+        "output": "Conector configurável",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§10.2, §13.5" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-015",
+      "statement": "O sistema deve permitir criar card manualmente dentro do board (se permitido).",
+      "priority": "Should",
+      "related_use_cases": ["UC-003"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Usuário cria card manualmente",
+        "input": null,
+        "output": "Card criado",
+        "error_case": "Sem permissão (não detalhado)"
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§13.6" }],
+      "confidence": "medium"
+    },
+    {
+      "rf_id": "RF-016",
+      "statement": "O sistema deve permitir execução manual de webhook por usuário com permissão dentro do card.",
+      "priority": "Must",
+      "related_use_cases": ["UC-007"],
+      "related_business_rules": ["RN-004", "RN-008"],
+      "acceptance_minimum": {
+        "trigger": "Usuário executa ação manual",
+        "input": null,
+        "output": "Requisição enviada",
+        "error_case": "Variável inexistente gera warning e null"
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§10.1, §10.5, §13.6" }],
+      "confidence": "high"
+    },
+    {
+      "rf_id": "RF-017",
+      "statement": "O sistema deve suportar paginação lazy load por coluna e contadores de total/carregados.",
+      "priority": "Must",
+      "related_use_cases": ["UC-003"],
+      "related_business_rules": [],
+      "acceptance_minimum": {
+        "trigger": "Usuário rola coluna",
+        "input": null,
+        "output": "Cards carregados incrementalmente",
+        "error_case": null
+      },
+      "sources": [{ "source_id": "SRC-001", "reference": "§11.1" }],
+      "confidence": "high"
+    }
+  ],
+  "business_rules": [
+    {
+      "rn_id": "RN-001",
+      "title": "Board e Card sempre possuem CardType",
+      "given_if": "Board está em operação",
+      "then": "Board deve estar associado a um CardType e todo card deve ter CardType",
+      "unless": [],
+      "precedence": null,
+      "examples": [
+        { "type": "valid", "input": "Board com CardType definido", "output": "Card associado ao CardType" },
+        { "type": "invalid", "input": "Card sem CardType", "output": "Inválido" }
+      ],
+      "involved_fields": [
+        { "entity": "ENT-003", "field": "cardTypeId" },
+        { "entity": "ENT-005", "field": "cardTypeId" }
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§3.3, §17.1" }],
+      "confidence": "high"
+    },
+    {
+      "rn_id": "RN-002",
+      "title": "Separação de buckets e regras de escrita",
+      "given_if": "Dados do card são manipulados",
+      "then": "sourceData é escrito apenas por ingress; inputs e props por usuário; outputs e pluginData por sistema/plugin",
+      "unless": [],
+      "precedence": null,
+      "examples": [
+        { "type": "valid", "input": "Usuário edita inputs", "output": "Alteração aceita" },
+        { "type": "invalid", "input": "Usuário altera sourceData", "output": "Alteração recusada" }
+      ],
+      "involved_fields": [
+        { "entity": "ENT-005", "field": "sourceData" },
+        { "entity": "ENT-005", "field": "cardData.inputs" },
+        { "entity": "ENT-005", "field": "cardData.outputs" },
+        { "entity": "ENT-005", "field": "props" },
+        { "entity": "ENT-005", "field": "pluginData" }
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§5.3" }],
+      "confidence": "high"
+    },
+    {
+      "rn_id": "RN-003",
+      "title": "Histórico obrigatório e estruturado",
+      "given_if": "Ação relevante ocorre no card",
+      "then": "Registrar evento com type, summary, payload, createdAt e createdBy",
+      "unless": [],
+      "precedence": null,
+      "examples": [
+        { "type": "valid", "input": "Card movido de coluna", "output": "Evento registrado" },
+        { "type": "invalid", "input": "Ação sem registro", "output": "Inválido" }
+      ],
+      "involved_fields": [
+        { "entity": "ENT-013", "field": "type" },
+        { "entity": "ENT-013", "field": "summary" },
+        { "entity": "ENT-013", "field": "payload" },
+        { "entity": "ENT-013", "field": "createdAt" },
+        { "entity": "ENT-013", "field": "createdBy" }
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§6.1" }],
+      "confidence": "high"
+    },
+    {
+      "rn_id": "RN-004",
+      "title": "Warnings não bloqueiam e inserem null",
+      "given_if": "Variável inexistente no template ou ausência de ID externo",
+      "then": "Substituir por null, registrar warning no histórico e não bloquear fluxo",
+      "unless": [],
+      "precedence": null,
+      "examples": [
+        { "type": "valid", "input": "Template com variável ausente", "output": "Null + warning" },
+        { "type": "invalid", "input": "Execução bloqueada", "output": "Inválido" }
+      ],
+      "involved_fields": [
+        { "entity": "ENT-013", "field": "payload" }
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§6.2, §9.4, §10.5" }],
+      "confidence": "high"
+    },
+    {
+      "rn_id": "RN-005",
+      "title": "Ingress com externalObjectIdPath define create/update",
+      "given_if": "IngressSource possui externalObjectIdPath configurado e valor presente",
+      "then": "Atualizar card por idempotencyKey; se não existir, criar card",
+      "unless": ["externalObjectIdPath ausente ou valor inexistente (criar novo)"] ,
+      "precedence": null,
+      "examples": [
+        { "type": "valid", "input": "Evento com externalId", "output": "Card atualizado ou criado" },
+        { "type": "invalid", "input": "Evento sem externalId bloqueado", "output": "Inválido" }
+      ],
+      "involved_fields": [
+        { "entity": "ENT-008", "field": "externalObjectIdPath" },
+        { "entity": "ENT-005", "field": "idempotencyKey" }
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§9.3-9.4" }],
+      "confidence": "high"
+    },
+    {
+      "rn_id": "RN-006",
+      "title": "Ordenação segue posição definida pelo usuário",
+      "given_if": "Usuário move card para posição específica",
+      "then": "Persistir a posição definida",
+      "unless": [],
+      "precedence": null,
+      "examples": [
+        { "type": "valid", "input": "Card inserido entre dois", "output": "Posição preservada" },
+        { "type": "invalid", "input": "Ordenação automática diferente", "output": "Inválido" }
+      ],
+      "involved_fields": [
+        { "entity": "ENT-005", "field": "position" }
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§11.2" }],
+      "confidence": "high"
+    },
+    {
+      "rn_id": "RN-007",
+      "title": "Plugin ausente no código não quebra card",
+      "given_if": "Plugin registrado no banco sem componente no código",
+      "then": "Exibir placeholder e registrar evento no histórico",
+      "unless": [],
+      "precedence": null,
+      "examples": [
+        { "type": "valid", "input": "Plugin inexistente", "output": "Placeholder exibido" },
+        { "type": "invalid", "input": "Modal quebra", "output": "Inválido" }
+      ],
+      "involved_fields": [
+        { "entity": "ENT-009", "field": "status" },
+        { "entity": "ENT-013", "field": "type" }
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§8.4" }],
+      "confidence": "high"
+    },
+    {
+      "rn_id": "RN-008",
+      "title": "Templates de webhook aceitam variáveis de ingress e do card",
+      "given_if": "Body template de webhook é configurado",
+      "then": "Aceitar {{$alias.json...}}, {{$input...}}, {{$output...}}, {{$props...}}, {{$system...}}",
+      "unless": ["Variável inexistente (ver RN-004)"] ,
+      "precedence": null,
+      "examples": [
+        { "type": "valid", "input": "{{$input.nome}}", "output": "Substituição de variável" },
+        { "type": "invalid", "input": "{{$foo.bar}}", "output": "Warning + null" }
+      ],
+      "involved_fields": [
+        { "entity": "ENT-010", "field": "bodyTemplate" }
+      ],
+      "sources": [{ "source_id": "SRC-001", "reference": "§10.3-10.4" }],
+      "confidence": "high"
+    }
+  ],
+  "data_model": {
+    "entities": [
+      {
+        "entity_id": "ENT-001",
+        "name": "Módulo",
+        "description": "Grande área/processo do negócio com árvore de navegação.",
+        "fields": [
+          { "name": "name", "type": "string", "required": null, "validations": [], "default": null, "example": "Telemetria" }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§3.1" }],
+        "confidence": "high"
+      },
+      {
+        "entity_id": "ENT-002",
+        "name": "Nó de Árvore",
+        "description": "Nó hierárquico da árvore do módulo; folhas associam-se a boards.",
+        "fields": [
+          { "name": "name", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "parentId", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "boardId", "type": "string", "required": null, "validations": [], "default": null, "example": null }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§3.2" }],
+        "confidence": "medium"
+      },
+      {
+        "entity_id": "ENT-003",
+        "name": "Board",
+        "description": "Quadro Kanban com colunas configuráveis e CardType associado.",
+        "fields": [
+          { "name": "name", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "description", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "cardTypeId", "type": "string", "required": null, "validations": [], "default": null, "example": null }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§3.3, §4.5" }],
+        "confidence": "high"
+      },
+      {
+        "entity_id": "ENT-004",
+        "name": "Coluna",
+        "description": "Coluna configurável do board que organiza cards.",
+        "fields": [
+          { "name": "name", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "position", "type": "number", "required": null, "validations": [], "default": null, "example": null }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§3.3, §11.2" }],
+        "confidence": "medium"
+      },
+      {
+        "entity_id": "ENT-005",
+        "name": "Card",
+        "description": "Unidade de trabalho com buckets de dados e histórico.",
+        "fields": [
+          { "name": "sourceData", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "cardData.inputs", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "cardData.outputs", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "props", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "pluginData", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "cardTypeId", "type": "string", "required": null, "validations": [], "default": null, "example": null }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§5.3" }],
+        "confidence": "high"
+      },
+      {
+        "entity_id": "ENT-006",
+        "name": "CardType",
+        "description": "Define campos e exibição do card.",
+        "fields": [
+          { "name": "name", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "fields", "type": "array", "required": null, "validations": [], "default": null, "example": null }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§7" }],
+        "confidence": "medium"
+      },
+      {
+        "entity_id": "ENT-007",
+        "name": "Field de CardType",
+        "description": "Campo configurável do CardType com bindingRef e tipo.",
+        "fields": [
+          { "name": "label", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "type", "type": "enum", "required": null, "validations": [], "default": null, "example": "string" },
+          { "name": "mode", "type": "enum", "required": null, "validations": [], "default": null, "example": "editable" },
+          { "name": "bindingRef", "type": "string", "required": null, "validations": [], "default": null, "example": "inputs.nome" },
+          { "name": "preview", "type": "boolean", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "modal", "type": "boolean", "required": null, "validations": [], "default": null, "example": null }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§7.2-7.3" }],
+        "confidence": "high"
+      },
+      {
+        "entity_id": "ENT-008",
+        "name": "IngressSource",
+        "description": "Configuração de entrada para eventos externos.",
+        "fields": [
+          { "name": "boardId", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "alias", "type": "string", "required": null, "validations": [], "default": null, "example": "telemetria" },
+          { "name": "schema", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "mapping", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "externalObjectIdPath", "type": "string", "required": null, "validations": [], "default": null, "example": "$.id" }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§9.2-9.3" }],
+        "confidence": "high"
+      },
+      {
+        "entity_id": "ENT-009",
+        "name": "Plugin (registro)",
+        "description": "Registro de plugin no banco para governança.",
+        "fields": [
+          { "name": "pluginKey", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "displayName", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "description", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "version", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "status", "type": "enum", "required": null, "validations": [], "default": null, "example": "active" }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§8.3" }],
+        "confidence": "high"
+      },
+      {
+        "entity_id": "ENT-010",
+        "name": "Conector Webhook",
+        "description": "Configuração de webhook genérico.",
+        "fields": [
+          { "name": "url", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "method", "type": "enum", "required": null, "validations": [], "default": null, "example": "POST" },
+          { "name": "headers", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "auth", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "bodyTemplate", "type": "object", "required": null, "validations": [], "default": null, "example": null }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§10.2" }],
+        "confidence": "high"
+      },
+      {
+        "entity_id": "ENT-011",
+        "name": "Label",
+        "description": "Etiqueta aplicada a cards, segregada por board.",
+        "fields": [
+          { "name": "name", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "boardId", "type": "string", "required": null, "validations": [], "default": null, "example": null }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§12" }],
+        "confidence": "medium"
+      },
+      {
+        "entity_id": "ENT-012",
+        "name": "Usuário",
+        "description": "Usuário administrado com papéis/perfis e status ativo/inativo.",
+        "fields": [
+          { "name": "role", "type": "string", "required": null, "validations": [], "default": null, "example": "Admin" },
+          { "name": "status", "type": "string", "required": null, "validations": [], "default": null, "example": "ativo" }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§14.3" }],
+        "confidence": "medium"
+      },
+      {
+        "entity_id": "ENT-013",
+        "name": "Histórico de Card",
+        "description": "Registro estruturado de eventos do card.",
+        "fields": [
+          { "name": "type", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "summary", "type": "string", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "payload", "type": "object", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "createdAt", "type": "datetime", "required": null, "validations": [], "default": null, "example": null },
+          { "name": "createdBy", "type": "string", "required": null, "validations": [], "default": null, "example": null }
+        ],
+        "sources": [{ "source_id": "SRC-001", "reference": "§6.1" }],
+        "confidence": "high"
+      }
+    ],
+    "enums": [
+      {
+        "name": "CardType.Field.type",
+        "values": ["string", "number", "date", "boolean", "enum", "object", "array"],
+        "sources": [{ "source_id": "SRC-001", "reference": "§7.2" }],
+        "confidence": "high"
+      },
+      {
+        "name": "CardType.Field.mode",
+        "values": ["editable", "readonly"],
+        "sources": [{ "source_id": "SRC-001", "reference": "§7.2" }],
+        "confidence": "high"
+      },
+      {
+        "name": "Plugin.status",
+        "values": ["active", "inactive"],
+        "sources": [{ "source_id": "SRC-001", "reference": "§8.3" }],
+        "confidence": "high"
+      },
+      {
+        "name": "Webhook.method",
+        "values": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+        "sources": [{ "source_id": "SRC-001", "reference": "§10.2" }],
+        "confidence": "high"
+      }
+    ],
+    "validations": []
+  },
+  "integrations": [
+    {
+      "integration_id": "INT-001",
+      "system": "Sistemas externos (IngressSource)",
+      "type": "api",
+      "data": "Payload externo mapeado para sourceData",
+      "frequency": null,
+      "sources": [{ "source_id": "SRC-001", "reference": "§9" }],
+      "confidence": "high"
+    },
+    {
+      "integration_id": "INT-002",
+      "system": "Conector Webhook",
+      "type": "api",
+      "data": "Body template com variáveis de ingress e card",
+      "frequency": "Manual por ação",
+      "sources": [{ "source_id": "SRC-001", "reference": "§10" }],
+      "confidence": "high"
+    }
+  ],
+  "ux": {
+    "screens": [
+      {
+        "screen_id": "SCR-001",
+        "name": "Login",
+        "objective": "Autenticação do usuário",
+        "actors": ["ACT-001"],
+        "linked_use_cases": ["UC-001"],
+        "linked_requirements": ["RF-001"],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "screen_id": "SCR-002",
+        "name": "Listagem de módulos",
+        "objective": "Exibir módulos permitidos",
+        "actors": ["ACT-001"],
+        "linked_use_cases": ["UC-001"],
+        "linked_requirements": ["RF-002"],
+        "sources": [{ "source_id": "SRC-001", "reference": "§4.1, §15" }],
+        "confidence": "medium"
+      },
+      {
+        "screen_id": "SCR-003",
+        "name": "Módulo com árvore e área principal",
+        "objective": "Navegar árvore e abrir board",
+        "actors": ["ACT-001"],
+        "linked_use_cases": ["UC-002"],
+        "linked_requirements": ["RF-003", "RF-004"],
+        "sources": [{ "source_id": "SRC-001", "reference": "§4.2-4.3, §15" }],
+        "confidence": "medium"
+      },
+      {
+        "screen_id": "SCR-004",
+        "name": "Board Kanban + Modal do Card",
+        "objective": "Operar kanban, editar card e executar ações manuais",
+        "actors": ["ACT-001", "ACT-003"],
+        "linked_use_cases": ["UC-003", "UC-004", "UC-007"],
+        "linked_requirements": ["RF-005", "RF-006", "RF-007", "RF-016", "RF-017"],
+        "sources": [{ "source_id": "SRC-001", "reference": "§4.4-4.5, §5, §10, §11" }],
+        "confidence": "medium"
+      },
+      {
+        "screen_id": "SCR-005",
+        "name": "Administração",
+        "objective": "Gerenciar cadastros e configurações",
+        "actors": ["ACT-003"],
+        "linked_use_cases": ["UC-005"],
+        "linked_requirements": ["RF-010", "RF-011", "RF-012", "RF-013", "RF-014"],
+        "sources": [{ "source_id": "SRC-001", "reference": "§13, §15" }],
+        "confidence": "medium"
+      }
+    ],
+    "routes": [
+      {
+        "route_id": "RTE-001",
+        "path": "/login",
+        "screen_id": "SCR-001",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-002",
+        "path": "/modules",
+        "screen_id": "SCR-002",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-003",
+        "path": "/modules/:moduleId",
+        "screen_id": "SCR-003",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-004",
+        "path": "/boards/:boardId?view=kanban",
+        "screen_id": "SCR-004",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-005",
+        "path": "/boards/:boardId?card=:cardId",
+        "screen_id": "SCR-004",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-006",
+        "path": "/admin/modules",
+        "screen_id": "SCR-005",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-007",
+        "path": "/admin/boards",
+        "screen_id": "SCR-005",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-008",
+        "path": "/admin/card-types",
+        "screen_id": "SCR-005",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-009",
+        "path": "/admin/ingress-sources",
+        "screen_id": "SCR-005",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-010",
+        "path": "/admin/plugins",
+        "screen_id": "SCR-005",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-011",
+        "path": "/admin/connectors",
+        "screen_id": "SCR-005",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      },
+      {
+        "route_id": "RTE-012",
+        "path": "/admin/users",
+        "screen_id": "SCR-005",
+        "guards": [],
+        "sources": [{ "source_id": "SRC-001", "reference": "§15" }],
+        "confidence": "medium"
+      }
+    ]
+  },
+  "open_points": [
+    {
+      "poa_id": "POA-001",
+      "question": "As rotas e telas listadas são definitivas ou apenas sugestivas?",
+      "category": "UX",
+      "impact": ["UI", "API"],
+      "severity": "MEDIUM",
+      "blocking": false,
+      "status": "open",
+      "owner": "PO",
+      "hypotheses": [
+        { "id": "H1", "text": "Manter rotas como listadas", "impact": "Define navegação e links atuais" },
+        { "id": "H2", "text": "Ajustar rotas conforme arquitetura existente", "impact": "Impacta front-end e deep links" },
+        { "id": "H3", "text": "Definir rotas após discovery com UI", "impact": "Postergar implementação de navegação" }
+      ],
+      "recommended_default": {
+        "text": "Sem decisão",
+        "rationale": "Rotas são descritas como sugeridas",
+        "status": "undecided",
+        "confidence": "low"
+      },
+      "affected_ids": ["SCR-001", "SCR-002", "SCR-003", "SCR-004", "SCR-005", "RTE-001", "RTE-012"],
+      "impact_summary": "Pode alterar URLs e estrutura de navegação.",
+      "sources": [{ "source_id": "SRC-001", "reference": "§15" }]
+    },
+    {
+      "poa_id": "POA-002",
+      "question": "O perfil Gestor/Líder será mantido no MVP ou apenas Operacional/Admin?",
+      "category": "Produto",
+      "impact": ["Segurança", "UI", "State"],
+      "severity": "MEDIUM",
+      "blocking": false,
+      "status": "open",
+      "owner": "PO",
+      "hypotheses": [
+        { "id": "H1", "text": "Manter Gestor como perfil separado", "impact": "Necessita matriz de permissões" },
+        { "id": "H2", "text": "Remover Gestor no MVP", "impact": "Simplifica RBAC" },
+        { "id": "H3", "text": "Mapear Gestor para Admin parcial", "impact": "Requer definição de permissões" }
+      ],
+      "recommended_default": {
+        "text": "Sem decisão",
+        "rationale": "Perfil é opcional no MVP",
+        "status": "undecided",
+        "confidence": "low"
+      },
+      "affected_ids": ["ACT-002", "RF-010"],
+      "impact_summary": "Define níveis de acesso e telas visíveis.",
+      "sources": [{ "source_id": "SRC-001", "reference": "§2.2, §14.4" }]
+    },
+    {
+      "poa_id": "POA-003",
+      "question": "Como será persistida a definição de CardType (JSON Schema ou outro modelo)?",
+      "category": "Dados",
+      "impact": ["Persistência", "API", "State"],
+      "severity": "MEDIUM",
+      "blocking": false,
+      "status": "open",
+      "owner": "TechLead",
+      "hypotheses": [
+        { "id": "H1", "text": "JSON Schema", "impact": "Modelagem flexível, exige validador" },
+        { "id": "H2", "text": "Modelo próprio simplificado", "impact": "Menor complexidade, menos compatível" },
+        { "id": "H3", "text": "Definição normalizada em tabelas", "impact": "Maior esforço de modelagem" }
+      ],
+      "recommended_default": {
+        "text": "Sem decisão",
+        "rationale": "Formato é citado como alternativa, não como decisão",
+        "status": "undecided",
+        "confidence": "low"
+      },
+      "affected_ids": ["ENT-006", "ENT-007", "RF-011"],
+      "impact_summary": "Impacta persistência e validação de CardTypes.",
+      "sources": [{ "source_id": "SRC-001", "reference": "§7.1" }]
+    }
+  ]
+}
