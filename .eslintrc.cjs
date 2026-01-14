@@ -7,9 +7,11 @@ module.exports = {
     "eslint:recommended",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
-    "plugin:react-refresh/recommended",
+    "plugin:@typescript-eslint/recommended",
     "prettier",
   ],
+  parser: "@typescript-eslint/parser",
+  plugins: ["@typescript-eslint", "react-refresh"],
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
@@ -21,5 +23,7 @@ module.exports = {
   },
   rules: {
     "react/react-in-jsx-scope": "off",
+    "react-refresh/only-export-components": "warn",
+    "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
   },
 };
