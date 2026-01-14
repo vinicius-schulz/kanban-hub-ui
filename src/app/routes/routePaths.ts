@@ -1,3 +1,6 @@
 export const routePaths = {
-  health: "/",
+  root: "/",
+  health: "/health",
+  login: "/login",
+  modules: "/modules",
 };

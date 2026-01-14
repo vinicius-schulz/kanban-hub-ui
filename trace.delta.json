@@ -1,0 +1,47 @@
+{
+  "increment_id": "INC-001",
+  "touched_files": [
+    "src/app/routes/index.tsx",
+    "src/app/routes/routePaths.ts",
+    "src/app/store/rootReducer.ts",
+    "src/modules/auth/presentation/components/AuthGuard.tsx",
+    "src/modules/auth/presentation/components/AuthRedirect.tsx",
+    "src/modules/auth/presentation/pages/LoginPage.tsx",
+    "src/modules/auth/presentation/state/authSlice.ts",
+    "src/modules/auth/presentation/state/selectors.ts",
+    "src/modules/modules/presentation/pages/ModulesPage.tsx",
+    "src/modules/modules/presentation/state/modulesSlice.ts",
+    "src/modules/modules/presentation/state/selectors.ts"
+  ],
+  "trace": [
+    {
+      "workplan_item": "INC-001 / ST-001",
+      "spec_refs": ["RF-001", "UC-001", "SCR-001", "RTE-001"],
+      "files": [
+        "src/modules/auth/presentation/pages/LoginPage.tsx",
+        "src/modules/auth/presentation/state/authSlice.ts",
+        "src/modules/auth/presentation/components/AuthGuard.tsx",
+        "src/modules/auth/presentation/components/AuthRedirect.tsx"
+      ]
+    },
+    {
+      "workplan_item": "INC-001 / ST-002",
+      "spec_refs": ["RF-002", "UC-001", "SCR-002", "RTE-002"],
+      "files": [
+        "src/modules/modules/presentation/pages/ModulesPage.tsx",
+        "src/modules/modules/presentation/state/modulesSlice.ts",
+        "src/modules/modules/presentation/state/selectors.ts"
+      ]
+    },
+    {
+      "workplan_item": "INC-001 / routes",
+      "spec_refs": ["RTE-001", "RTE-002"],
+      "files": [
+        "src/app/routes/index.tsx",
+        "src/app/routes/routePaths.ts"
+      ]
+    }
+  ],
+  "safe_defaults": [],
+  "open_issues": []
+}
