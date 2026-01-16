@@ -1,0 +1,304 @@
+{
+  "meta": {
+    "schema_version": "2.0",
+    "generated_by": "AGENT_7",
+    "source_of_truth": "spec.resolved.json",
+    "planning_mode": "VERTICAL_SLICES",
+    "notes": [
+      "POA-003 (autenticação) e POA-004 (cardTypeId) são blockers; incrementos usam mocks/provisórios onde necessário.",
+      "UCs administrativos sem RFs explícitos (UC-005/UC-008/UC-010) permanecem fora do escopo dos incrementos." 
+    ]
+  },
+  "increment_0_domain_foundation": {
+    "id": "INC-000",
+    "title": "Domain Foundation — Entidades e contratos base",
+    "goal": "Definir vocabulário mínimo do domínio para sustentar UI/state dos fluxos principais (login, módulos, boards, cards e histórico).",
+    "scope_in": [
+      "Tipos/IDs para User, Session, Module, ModuleNode, Board, Column, Card, CardType, CardTypeField, Label, HistoryEvent",
+      "Enums de status e tipos (CardTypeField.type/mode, PluginRegistry.status, WebhookConnector.method)",
+      "DTOs base para Login, ModuleSummary, BoardSummary, CardSummary",
+      "Fixtures mock para módulos/boards/cards/histórico"
+    ],
+    "scope_out": [
+      "Integrações reais de autenticação",
+      "Persistência real",
+      "Regras completas de ingestão e conectores"
+    ],
+    "deliverables": [
+      {
+        "type": "code",
+        "description": "Entidades e tipos do domínio com contratos mínimos",
+        "target_paths_hint": ["src/core/domain", "src/modules/*/domain"]
+      },
+      {
+        "type": "code",
+        "description": "Fixtures mock para UI/state",
+        "target_paths_hint": ["src/core/domain/fixtures", "src/modules/*/infra/mocks"]
+      }
+    ],
+    "gates": [
+      { "name": "typecheck", "command": "npm run typecheck", "required": true },
+      { "name": "lint", "command": "npm run lint", "required": true },
+      { "name": "build", "command": "npm run build", "required": true }
+    ],
+    "risk_notes": [
+      { "level": "HIGH", "reason": "POA-004 impacta modelo de Card/CardType.", "mitigation": "Modelar cardTypeId como opcional e documentar provisório até decisão." }
+    ],
+    "provisories": [
+      { "what": "Card.cardTypeId opcional", "because": "POA-004", "replacement_plan": "Atualizar modelo quando decisão formal for definida." }
+    ],
+    "definition_of_done": [
+      "Tipos e enums publicados para uso pelos módulos",
+      "Fixtures básicas disponíveis",
+      "Gates required passam"
+    ]
+  },
+  "increments": [
+    {
+      "id": "INC-001",
+      "title": "Autenticação mock + listagem de módulos",
+      "goal": "Disponibilizar entrada no sistema e listagem de módulos com dados mockados.",
+      "scope_in": ["Login", "Sessão mock", "Lista de módulos"],
+      "scope_out": ["Autenticação real", "RBAC completo"],
+      "dependencies": ["INC-000"],
+      "stories": ["ST-001", "ST-002"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "Tela de login e sessão mock",
+          "target_paths_hint": ["src/modules/auth", "src/app/routes"]
+        },
+        {
+          "type": "code",
+          "description": "Página de módulos com navegação",
+          "target_paths_hint": ["src/modules/modules/presentation"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        { "level": "HIGH", "reason": "Autenticação indefinida (POA-003).", "mitigation": "Manter adapter mock isolado e substituível." }
+      ],
+      "provisories": [
+        { "what": "Sessão mock/local", "because": "POA-003", "replacement_plan": "Substituir por integração real quando mecanismo definido." }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Fluxo login → módulos demonstrável",
+        "Critérios de aceitação das stories atendidos"
+      ]
+    },
+    {
+      "id": "INC-002",
+      "title": "Árvore de módulos + Kanban read-only",
+      "goal": "Permitir navegar pela árvore e visualizar o board com colunas/cards.",
+      "scope_in": ["Árvore do módulo", "Board Kanban read-only"],
+      "scope_out": ["Edição/movimentação de cards"],
+      "dependencies": ["INC-000", "INC-001"],
+      "stories": ["ST-003", "ST-004"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "Tela de detalhe do módulo com árvore",
+          "target_paths_hint": ["src/modules/modules/presentation"]
+        },
+        {
+          "type": "code",
+          "description": "Board Kanban com colunas/cards",
+          "target_paths_hint": ["src/modules/board/presentation"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        { "level": "MEDIUM", "reason": "Dependência de fixtures adequadas para árvore/board.", "mitigation": "Definir fixtures no INC-000." }
+      ],
+      "provisories": [],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Árvore e board renderizam com dados mock",
+        "Critérios de aceitação das stories atendidos"
+      ]
+    },
+    {
+      "id": "INC-003",
+      "title": "Operação de cards + histórico",
+      "goal": "Permitir mover cards, editar dados e registrar histórico.",
+      "scope_in": ["Drag & drop", "Modal do card", "Histórico"],
+      "scope_out": ["Integrações reais de webhook"],
+      "dependencies": ["INC-000", "INC-002"],
+      "stories": ["ST-005", "ST-006", "ST-007"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "DnD de cards e persistência mock",
+          "target_paths_hint": ["src/modules/board/presentation", "src/modules/board/presentation/state"]
+        },
+        {
+          "type": "code",
+          "description": "Modal do card com edição básica",
+          "target_paths_hint": ["src/modules/card/presentation"]
+        },
+        {
+          "type": "code",
+          "description": "Registro e visualização do histórico",
+          "target_paths_hint": ["src/modules/card/presentation", "src/modules/card/presentation/state"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        { "level": "MEDIUM", "reason": "Dependência de definição de permissões (POA-001).", "mitigation": "Tratar Gestor como Operacional (assumptions.md)." }
+      ],
+      "provisories": [
+        { "what": "Permissões simplificadas", "because": "POA-001", "replacement_plan": "Ajustar RBAC quando perfil Gestor for definido." }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Movimentação e edição funcionais em mock",
+        "Histórico atualiza em ações principais"
+      ]
+    },
+    {
+      "id": "INC-004",
+      "title": "Configuração de board",
+      "goal": "Disponibilizar UI para configurar colunas, labels, CardType e IngressSource.",
+      "scope_in": ["Configuração via engrenagem"],
+      "scope_out": ["Persistência real"],
+      "dependencies": ["INC-000", "INC-002"],
+      "stories": ["ST-008"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "Tela de configurações do board",
+          "target_paths_hint": ["src/modules/board/presentation", "src/modules/board/presentation/state"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [],
+      "provisories": [],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Configurações alteram state local",
+        "Critérios de aceitação da story atendidos"
+      ]
+    },
+    {
+      "id": "INC-005",
+      "title": "Admin: CardTypes, IngressSources e Conectores",
+      "goal": "Permitir CRUD local dos cadastros técnicos essenciais do MVP.",
+      "scope_in": ["Admin CardTypes", "Admin IngressSources", "Admin Conectores"],
+      "scope_out": ["Admin Módulos/Boards/Usuários/Plugins (POA-005)"] ,
+      "dependencies": ["INC-000", "INC-001"],
+      "stories": ["ST-009", "ST-010", "ST-011"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "CRUD de CardTypes/Fields",
+          "target_paths_hint": ["src/modules/admin/card-types"]
+        },
+        {
+          "type": "code",
+          "description": "CRUD de IngressSources",
+          "target_paths_hint": ["src/modules/admin/ingress-sources"]
+        },
+        {
+          "type": "code",
+          "description": "CRUD de Conectores",
+          "target_paths_hint": ["src/modules/admin/connectors"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        { "level": "HIGH", "reason": "UCs administrativos sem RFs (POA-005).", "mitigation": "Escopo restrito aos RFs existentes." }
+      ],
+      "provisories": [
+        { "what": "Admin limitado aos RFs 008/009/011", "because": "POA-005", "replacement_plan": "Adicionar RFs ou remover UCs conforme decisão." }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "CRUDs locais funcionais",
+        "Critérios de aceitação das stories atendidos"
+      ]
+    },
+    {
+      "id": "INC-006",
+      "title": "Ingestão mock de eventos",
+      "goal": "Simular criação/atualização de cards via IngressSource.",
+      "scope_in": ["Processamento de eventos mock"],
+      "scope_out": ["Integração real com fontes externas"],
+      "dependencies": ["INC-000", "INC-003", "INC-005"],
+      "stories": ["ST-012"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "Adapter mock de ingestão",
+          "target_paths_hint": ["src/modules/ingress/infra", "src/modules/ingress/application"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        { "level": "LOW", "reason": "Semântica de warning indefinida (POA-002).", "mitigation": "Marcar eventos como warning provisório." }
+      ],
+      "provisories": [
+        { "what": "Warning por ausência de externalObjectIdPath", "because": "POA-002", "replacement_plan": "Ajustar severidade após decisão." }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Cards criados/atualizados via mock",
+        "Histórico registra eventos de ingestão"
+      ]
+    },
+    {
+      "id": "INC-007",
+      "title": "Webhook manual no card",
+      "goal": "Permitir executar conectores manualmente a partir do modal do card.",
+      "scope_in": ["Execução manual de webhook", "Registro no histórico"],
+      "scope_out": ["Envio real para endpoints externos"],
+      "dependencies": ["INC-003", "INC-005"],
+      "stories": ["ST-013"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "Ação de webhook no modal do card",
+          "target_paths_hint": ["src/modules/card/presentation", "src/modules/admin/connectors"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [],
+      "provisories": [
+        { "what": "Execução mock de webhook", "because": "Sem backend definido", "replacement_plan": "Substituir por integração real quando API existir." }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Ação disponível no modal do card",
+        "Histórico registra sucesso/erro"
+      ]
+    }
+  ]
+}

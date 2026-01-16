@@ -1,0 +1,196 @@
+{
+  "meta": {
+    "schema_version": "2.0",
+    "generated_by": "AGENT_7",
+    "source_of_truth": "spec.resolved.json"
+  },
+  "requirements": [
+    {
+      "req_id": "RF-001",
+      "req_title": "Autenticação via login",
+      "spec_paths": ["/functional_requirements/0"],
+      "mapped_to": {
+        "epics": ["EP-001"],
+        "stories": ["ST-001"],
+        "tasks": ["TSK-001", "TSK-002"],
+        "increments": ["INC-001"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/auth/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/auth/presentation/state"] },
+        { "type": "mock", "target_paths_hint": ["src/modules/auth/infra"] }
+      ],
+      "notes": ["Implementação mock até resolução de POA-003."]
+    },
+    {
+      "req_id": "RF-002",
+      "req_title": "Listagem de módulos",
+      "spec_paths": ["/functional_requirements/1"],
+      "mapped_to": {
+        "epics": ["EP-002"],
+        "stories": ["ST-002"],
+        "tasks": ["TSK-003"],
+        "increments": ["INC-001"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/modules/presentation"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-003",
+      "req_title": "Árvore do módulo e carregamento do board",
+      "spec_paths": ["/functional_requirements/2"],
+      "mapped_to": {
+        "epics": ["EP-002", "EP-003"],
+        "stories": ["ST-003", "ST-004"],
+        "tasks": ["TSK-004", "TSK-005"],
+        "increments": ["INC-002"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/modules/presentation", "src/modules/board/presentation"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-004",
+      "req_title": "Mover cards entre colunas",
+      "spec_paths": ["/functional_requirements/3"],
+      "mapped_to": {
+        "epics": ["EP-003"],
+        "stories": ["ST-005"],
+        "tasks": ["TSK-006"],
+        "increments": ["INC-003"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/board/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/board/presentation/state"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-005",
+      "req_title": "Editar card via modal",
+      "spec_paths": ["/functional_requirements/4"],
+      "mapped_to": {
+        "epics": ["EP-003"],
+        "stories": ["ST-006"],
+        "tasks": ["TSK-007"],
+        "increments": ["INC-003"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/card/presentation"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-006",
+      "req_title": "Histórico estruturado",
+      "spec_paths": ["/functional_requirements/5"],
+      "mapped_to": {
+        "epics": ["EP-003"],
+        "stories": ["ST-007"],
+        "tasks": ["TSK-008"],
+        "increments": ["INC-003"]
+      },
+      "deliverables_hint": [
+        { "type": "state", "target_paths_hint": ["src/modules/card/presentation/state"] },
+        { "type": "ui", "target_paths_hint": ["src/modules/card/presentation"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-007",
+      "req_title": "Configuração de board",
+      "spec_paths": ["/functional_requirements/6"],
+      "mapped_to": {
+        "epics": ["EP-004"],
+        "stories": ["ST-008"],
+        "tasks": ["TSK-009"],
+        "increments": ["INC-004"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/board/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/board/presentation/state"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-008",
+      "req_title": "CRUD de CardTypes",
+      "spec_paths": ["/functional_requirements/7"],
+      "mapped_to": {
+        "epics": ["EP-005"],
+        "stories": ["ST-009"],
+        "tasks": ["TSK-010"],
+        "increments": ["INC-005"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/admin/card-types"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-009",
+      "req_title": "CRUD de IngressSources",
+      "spec_paths": ["/functional_requirements/8"],
+      "mapped_to": {
+        "epics": ["EP-005"],
+        "stories": ["ST-010"],
+        "tasks": ["TSK-011"],
+        "increments": ["INC-005"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/admin/ingress-sources"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-010",
+      "req_title": "Criar/atualizar cards por ingestão",
+      "spec_paths": ["/functional_requirements/9"],
+      "mapped_to": {
+        "epics": ["EP-006"],
+        "stories": ["ST-012"],
+        "tasks": ["TSK-013"],
+        "increments": ["INC-006"]
+      },
+      "deliverables_hint": [
+        { "type": "api", "target_paths_hint": ["src/modules/ingress/infra"] },
+        { "type": "domain", "target_paths_hint": ["src/modules/ingress/application"] }
+      ],
+      "notes": ["Semântica de warning provisória (POA-002)."]
+    },
+    {
+      "req_id": "RF-011",
+      "req_title": "Configurar conectores webhook",
+      "spec_paths": ["/functional_requirements/10"],
+      "mapped_to": {
+        "epics": ["EP-005"],
+        "stories": ["ST-011"],
+        "tasks": ["TSK-012"],
+        "increments": ["INC-005"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/admin/connectors"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-012",
+      "req_title": "Executar webhook manual no card",
+      "spec_paths": ["/functional_requirements/11"],
+      "mapped_to": {
+        "epics": ["EP-007"],
+        "stories": ["ST-013"],
+        "tasks": ["TSK-014"],
+        "increments": ["INC-007"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/card/presentation"] },
+        { "type": "mock", "target_paths_hint": ["src/modules/admin/connectors"] }
+      ],
+      "notes": []
+    }
+  ]
+}
