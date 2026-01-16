@@ -1,12 +1,17 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { routePaths } from "@/app/routes/routePaths";
-import { HealthPage } from "@/modules/healthcheck/presentation/pages/HealthPage";
+import { LoginPage } from "@/modules/auth/presentation/pages/LoginPage";
+import { ModuleDetailPage } from "@/modules/modules/presentation/pages/ModuleDetailPage";
+import { ModulesPage } from "@/modules/modules/presentation/pages/ModulesPage";
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route path={routePaths.root} element={<HealthPage />} />
-      <Route path="*" element={<Navigate to={routePaths.root} replace />} />
+      <Route path={routePaths.root} element={<Navigate to={routePaths.login} replace />} />
+      <Route path={routePaths.login} element={<LoginPage />} />
+      <Route path={routePaths.modules} element={<ModulesPage />} />
+      <Route path={routePaths.moduleDetail} element={<ModuleDetailPage />} />
+      <Route path="*" element={<Navigate to={routePaths.login} replace />} />
     </Routes>
   );
 };
