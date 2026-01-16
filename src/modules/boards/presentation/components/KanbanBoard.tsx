@@ -2,18 +2,27 @@ import {
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Board, Card, ColumnId } from "@/modules/_shared/domain/domain.contracts";
 import {
   BOARD_CARDS_PAGE_SIZE,
+  buildBoardCardsState,
+  createManualCard,
   getCardHistoryByCardId,
   getCardsPage,
   getColumnsByBoardId,
+  moveCardToColumn,
 } from "@/modules/boards/application/kanbanState";
+import { getWebhooksByBoardId } from "@/modules/boards/infra/boardWebhooks.fixtures";
 import { CardModal } from "@/modules/boards/presentation/components/CardModal";
 
 interface KanbanBoardProps {
@@ -33,6 +42,12 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
   const columns = useMemo(() => getColumnsByBoardId(board.id), [board.id]);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [pagesByColumn, setPagesByColumn] = useState<Record<ColumnId, number>>({} as Record<ColumnId, number>);
+  const [boardCards, setBoardCards] = useState<Card[]>([]);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createColumnId, setCreateColumnId] = useState<ColumnId | "">("");
+  const [createTitle, setCreateTitle] = useState("");
+  const [createImpact, setCreateImpact] = useState("");
+  const manualCardSequenceRef = useRef(1);
 
   useEffect(() => {
     setPagesByColumn(
@@ -42,15 +57,53 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
       }, {})
     );
     setSelectedCard(null);
+    setBoardCards(buildBoardCardsState(board.id));
+    setIsCreateOpen(false);
+    setCreateColumnId("");
+    setCreateTitle("");
+    setCreateImpact("");
   }, [columns]);
 
   const selectedCardHistory = selectedCard ? getCardHistoryByCardId(selectedCard.id) : [];
+  const availableWebhooks = useMemo(() => getWebhooksByBoardId(board.id), [board.id]);
 
   const handleLoadMore = (columnId: ColumnId) => {
     setPagesByColumn((prev) => ({
       ...prev,
       [columnId]: (prev[columnId] ?? 1) + 1,
     }));
+  };
+
+  const handleDropCard = (columnId: ColumnId, cardId: string | null) => {
+    if (!cardId) {
+      return;
+    }
+    setBoardCards((prev) =>
+      moveCardToColumn({ cards: prev, cardId: cardId as Card["id"], destinationColumnId: columnId })
+    );
+  };
+
+  const handleStartCreate = (columnId: ColumnId) => {
+    setCreateColumnId(columnId);
+    setIsCreateOpen(true);
+  };
+
+  const handleConfirmCreate = () => {
+    if (!createColumnId || !createTitle.trim()) {
+      return;
+    }
+    const newCard = createManualCard({
+      boardId: board.id,
+      columnId: createColumnId,
+      title: createTitle.trim(),
+      description: createImpact.trim() || undefined,
+      sequence: manualCardSequenceRef.current,
+    });
+    manualCardSequenceRef.current += 1;
+    setBoardCards((prev) => [...prev, newCard]);
+    setIsCreateOpen(false);
+    setCreateTitle("");
+    setCreateImpact("");
   };
 
   return (
@@ -89,12 +142,22 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
             boardId: board.id,
             columnId: column.id,
             page,
+            cardsOverride: boardCards,
           });
 
           return (
-            <Paper key={column.id} variant="outlined" sx={{ p: 2, bgcolor: "grey.50" }}>
+            <Paper
+              key={column.id}
+              variant="outlined"
+              sx={{ p: 2, bgcolor: "grey.50" }}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                const cardId = event.dataTransfer.getData("text/plain");
+                handleDropCard(column.id, cardId);
+              }}
+            >
               <Stack spacing={2}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
                   <Box>
                     <Typography variant="subtitle1" fontWeight={600}>
                       {column.name}
@@ -103,7 +166,12 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
                       {cards.length} de {total} cards visíveis
                     </Typography>
                   </Box>
-                  <Chip label={total} size="small" />
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip label={total} size="small" />
+                    <Button variant="text" size="small" onClick={() => handleStartCreate(column.id)}>
+                      Criar card
+                    </Button>
+                  </Stack>
                 </Stack>
 
                 <Stack spacing={1.5}>
@@ -118,6 +186,11 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
                         variant="outlined"
                         sx={{ p: 2, cursor: "pointer" }}
                         onClick={() => setSelectedCard(card)}
+                        draggable
+                        onDragStart={(event) => {
+                          event.dataTransfer.setData("text/plain", card.id);
+                          event.dataTransfer.effectAllowed = "move";
+                        }}
                       >
                         <Stack spacing={1}>
                           <Typography variant="subtitle2" fontWeight={600}>
@@ -151,8 +224,41 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
         open={Boolean(selectedCard)}
         card={selectedCard}
         historyEntries={selectedCardHistory}
+        webhooks={availableWebhooks}
         onClose={() => setSelectedCard(null)}
       />
+
+      <Dialog open={isCreateOpen} onClose={() => setIsCreateOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Novo card manual</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              TODO(POA-005): Definir ordenação definitiva dos cards no board.
+            </Typography>
+            <TextField
+              label="Título"
+              value={createTitle}
+              onChange={(event) => setCreateTitle(event.target.value)}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Impacto"
+              value={createImpact}
+              onChange={(event) => setCreateImpact(event.target.value)}
+              fullWidth
+              multiline
+              minRows={3}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={handleConfirmCreate} disabled={!createTitle.trim()}>
+            Criar card
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 };

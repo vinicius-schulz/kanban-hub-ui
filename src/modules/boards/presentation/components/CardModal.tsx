@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Chip,
   Dialog,
@@ -7,17 +8,21 @@ import {
   DialogTitle,
   Divider,
   IconButton,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
   Stack,
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import React from "react";
-import type { Card, CardHistoryEntry } from "@/modules/_shared/domain/domain.contracts";
+import React, { useEffect, useMemo, useState } from "react";
+import type { Card, CardHistoryEntry, Webhook } from "@/modules/_shared/domain/domain.contracts";
 
 interface CardModalProps {
   open: boolean;
   card: Card | null;
   historyEntries: CardHistoryEntry[];
+  webhooks: Webhook[];
   onClose: () => void;
 }
 
@@ -48,10 +53,37 @@ const renderJsonSection = (value: unknown) => {
   );
 };
 
-export const CardModal = ({ open, card, historyEntries, onClose }: CardModalProps) => {
+export const CardModal = ({ open, card, historyEntries, webhooks, onClose }: CardModalProps) => {
+  const [selectedWebhookId, setSelectedWebhookId] = useState<string>("");
+  const [executionMessage, setExecutionMessage] = useState<string | null>(null);
+
+  const selectedWebhook = useMemo(
+    () => webhooks.find((webhook) => webhook.id === selectedWebhookId),
+    [webhooks, selectedWebhookId]
+  );
+
+  useEffect(() => {
+    setSelectedWebhookId("");
+    setExecutionMessage(null);
+  }, [card?.id]);
+
   if (!card) {
     return null;
   }
+
+  const handleWebhookChange = (event: SelectChangeEvent<string>) => {
+    setSelectedWebhookId(event.target.value);
+    setExecutionMessage(null);
+  };
+
+  const handleExecuteWebhook = () => {
+    if (!selectedWebhook) {
+      return;
+    }
+    setExecutionMessage(
+      `Webhook mock "${selectedWebhook.url ?? "URL não definida"}" executado com sucesso.`
+    );
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -136,6 +168,57 @@ export const CardModal = ({ open, card, historyEntries, onClose }: CardModalProp
                 ))
               )}
             </Stack>
+          </Box>
+          <Divider />
+          <Box>
+            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+              Execução manual de webhook
+            </Typography>
+            {webhooks.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                Nenhum conector webhook disponível para este board.
+              </Typography>
+            ) : (
+              <Stack spacing={2}>
+                <Select
+                  size="small"
+                  displayEmpty
+                  value={selectedWebhookId}
+                  onChange={handleWebhookChange}
+                  renderValue={(value) => {
+                    if (!value) {
+                      return "Selecione um conector";
+                    }
+                    return webhooks.find((webhook) => webhook.id === value)?.url ?? value;
+                  }}
+                >
+                  <MenuItem value="">Selecione um conector</MenuItem>
+                  {webhooks.map((webhook) => (
+                    <MenuItem key={webhook.id} value={webhook.id}>
+                      {webhook.method ?? "POST"} • {webhook.url ?? webhook.id}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    TODO(POA-004): Implementar execução real do webhook com autenticação e template.
+                  </Typography>
+                </Box>
+                <Box>
+                  <Chip
+                    label="Executar webhook"
+                    color="primary"
+                    onClick={handleExecuteWebhook}
+                    disabled={!selectedWebhook}
+                  />
+                </Box>
+                {executionMessage ? (
+                  <Alert severity="success" variant="outlined">
+                    {executionMessage}
+                  </Alert>
+                ) : null}
+              </Stack>
+            )}
           </Box>
         </Stack>
       </DialogContent>
