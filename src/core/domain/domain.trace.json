@@ -1,0 +1,332 @@
+{
+  "version": "1.0",
+  "source_of_truth": "spec.resolved.json",
+  "entities": [
+    {
+      "name": "Module",
+      "entity_id": "ENT-001",
+      "spec_paths": ["/data_model/entities/0"],
+      "fields": {
+        "name": {
+          "spec_path": "/data_model/entities/0/fields/0"
+        },
+        "description": {
+          "spec_path": "/data_model/entities/0/fields/1"
+        }
+      }
+    },
+    {
+      "name": "ModuleNode",
+      "entity_id": "ENT-002",
+      "spec_paths": ["/data_model/entities/1"],
+      "fields": {
+        "name": {
+          "spec_path": "/data_model/entities/1/fields/0"
+        },
+        "parentId": {
+          "spec_path": "/data_model/entities/1/fields/1"
+        },
+        "boardId": {
+          "spec_path": "/data_model/entities/1/fields/2"
+        },
+        "moduleId": {
+          "spec_path": "TBD",
+          "notes": "Relação inferida da seção 3.2 (árvore do módulo)."
+        }
+      }
+    },
+    {
+      "name": "Board",
+      "entity_id": "ENT-003",
+      "spec_paths": ["/data_model/entities/2"],
+      "fields": {
+        "name": {
+          "spec_path": "/data_model/entities/2/fields/0"
+        },
+        "description": {
+          "spec_path": "/data_model/entities/2/fields/1"
+        },
+        "cardTypeId": {
+          "spec_path": "/data_model/entities/2/fields/2",
+          "rules": ["RN-002"]
+        },
+        "ingressSourceId": {
+          "spec_path": "/data_model/entities/2/fields/3"
+        }
+      }
+    },
+    {
+      "name": "Column",
+      "entity_id": "ENT-004",
+      "spec_paths": ["/data_model/entities/3"],
+      "fields": {
+        "name": {
+          "spec_path": "/data_model/entities/3/fields/0"
+        },
+        "order": {
+          "spec_path": "/data_model/entities/3/fields/1"
+        },
+        "boardId": {
+          "spec_path": "TBD",
+          "notes": "Relação implícita (coluna do board)."
+        }
+      }
+    },
+    {
+      "name": "Card",
+      "entity_id": "ENT-005",
+      "spec_paths": ["/data_model/entities/4"],
+      "fields": {
+        "sourceData": {
+          "spec_path": "/data_model/entities/4/fields/0",
+          "rules": ["RN-003"]
+        },
+        "cardData.inputs": {
+          "spec_path": "/data_model/entities/4/fields/1",
+          "rules": ["RN-004"]
+        },
+        "cardData.outputs": {
+          "spec_path": "/data_model/entities/4/fields/2",
+          "rules": ["RN-004"]
+        },
+        "props": {
+          "spec_path": "/data_model/entities/4/fields/3",
+          "rules": ["RN-004"]
+        },
+        "pluginData": {
+          "spec_path": "/data_model/entities/4/fields/4"
+        },
+        "labels": {
+          "spec_path": "/data_model/entities/4/fields/5"
+        },
+        "boardId": {
+          "spec_path": "TBD",
+          "notes": "Necessário para kanban (UC-003/UC-004)."
+        },
+        "columnId": {
+          "spec_path": "TBD",
+          "notes": "Necessário para mover cards entre colunas (UC-003)."
+        },
+        "cardTypeId": {
+          "spec_path": "TBD",
+          "notes": "POA-004: relação Card ↔ CardType indefinida.",
+          "rules": ["RN-001"]
+        }
+      }
+    },
+    {
+      "name": "CardHistoryEvent",
+      "entity_id": "ENT-006",
+      "spec_paths": ["/data_model/entities/5"],
+      "fields": {
+        "type": {
+          "spec_path": "/data_model/entities/5/fields/0"
+        },
+        "summary": {
+          "spec_path": "/data_model/entities/5/fields/1"
+        },
+        "payload": {
+          "spec_path": "/data_model/entities/5/fields/2"
+        },
+        "createdAt": {
+          "spec_path": "/data_model/entities/5/fields/3"
+        },
+        "createdBy": {
+          "spec_path": "/data_model/entities/5/fields/4"
+        },
+        "cardId": {
+          "spec_path": "TBD",
+          "notes": "Associação necessária para listar histórico por card."
+        }
+      }
+    },
+    {
+      "name": "CardType",
+      "entity_id": "ENT-007",
+      "spec_paths": ["/data_model/entities/6"],
+      "fields": {
+        "name": {
+          "spec_path": "/data_model/entities/6/fields/0"
+        },
+        "description": {
+          "spec_path": "/data_model/entities/6/fields/1"
+        }
+      }
+    },
+    {
+      "name": "CardTypeField",
+      "entity_id": "ENT-008",
+      "spec_paths": ["/data_model/entities/7"],
+      "fields": {
+        "label": {
+          "spec_path": "/data_model/entities/7/fields/0"
+        },
+        "type": {
+          "spec_path": "/data_model/entities/7/fields/1"
+        },
+        "mode": {
+          "spec_path": "/data_model/entities/7/fields/2"
+        },
+        "bindingRef": {
+          "spec_path": "/data_model/entities/7/fields/3"
+        },
+        "format": {
+          "spec_path": "/data_model/entities/7/fields/4"
+        },
+        "showInPreview": {
+          "spec_path": "/data_model/entities/7/fields/5"
+        },
+        "showInModal": {
+          "spec_path": "/data_model/entities/7/fields/6"
+        },
+        "cardTypeId": {
+          "spec_path": "TBD",
+          "notes": "Relacionamento implícito CardType ↔ Field (UC-006)."
+        }
+      }
+    },
+    {
+      "name": "IngressSource",
+      "entity_id": "ENT-009",
+      "spec_paths": ["/data_model/entities/8"],
+      "fields": {
+        "boardId": {
+          "spec_path": "/data_model/entities/8/fields/0"
+        },
+        "alias": {
+          "spec_path": "/data_model/entities/8/fields/1"
+        },
+        "payloadSchema": {
+          "spec_path": "/data_model/entities/8/fields/2"
+        },
+        "mapping": {
+          "spec_path": "/data_model/entities/8/fields/3"
+        },
+        "externalObjectIdPath": {
+          "spec_path": "/data_model/entities/8/fields/4",
+          "rules": ["RN-006"]
+        }
+      }
+    },
+    {
+      "name": "WebhookConnector",
+      "entity_id": "ENT-010",
+      "spec_paths": ["/data_model/entities/9"],
+      "fields": {
+        "url": {
+          "spec_path": "/data_model/entities/9/fields/0"
+        },
+        "method": {
+          "spec_path": "/data_model/entities/9/fields/1"
+        },
+        "headers": {
+          "spec_path": "/data_model/entities/9/fields/2"
+        },
+        "auth": {
+          "spec_path": "/data_model/entities/9/fields/3"
+        },
+        "bodyTemplate": {
+          "spec_path": "/data_model/entities/9/fields/4",
+          "rules": ["RN-007"]
+        }
+      }
+    },
+    {
+      "name": "PluginRegistry",
+      "entity_id": "ENT-011",
+      "spec_paths": ["/data_model/entities/10"],
+      "fields": {
+        "pluginKey": {
+          "spec_path": "/data_model/entities/10/fields/0"
+        },
+        "displayName": {
+          "spec_path": "/data_model/entities/10/fields/1"
+        },
+        "description": {
+          "spec_path": "/data_model/entities/10/fields/2"
+        },
+        "version": {
+          "spec_path": "/data_model/entities/10/fields/3"
+        },
+        "status": {
+          "spec_path": "/data_model/entities/10/fields/4"
+        },
+        "capabilities": {
+          "spec_path": "/data_model/entities/10/fields/5"
+        }
+      }
+    },
+    {
+      "name": "User",
+      "entity_id": "ENT-012",
+      "spec_paths": ["/data_model/entities/11"],
+      "fields": {
+        "username": {
+          "spec_path": "/data_model/entities/11/fields/0"
+        },
+        "status": {
+          "spec_path": "/data_model/entities/11/fields/1"
+        },
+        "roles": {
+          "spec_path": "/data_model/entities/11/fields/2"
+        }
+      }
+    }
+  ],
+  "contracts": [
+    {
+      "name": "LoginInput",
+      "spec_refs": ["UC-001", "RF-001"],
+      "notes": "Credenciais detalhadas não especificadas; modelado como username+password (TBD)."
+    },
+    {
+      "name": "Session",
+      "spec_refs": ["UC-001", "RF-001"],
+      "notes": "Token e expiração indefinidos (POA-003)."
+    }
+  ],
+  "enums": [
+    {
+      "name": "CardTypeField.type",
+      "spec_path": "/data_model/enums/0"
+    },
+    {
+      "name": "CardTypeField.mode",
+      "spec_path": "/data_model/enums/1"
+    },
+    {
+      "name": "PluginRegistry.status",
+      "spec_path": "/data_model/enums/2"
+    },
+    {
+      "name": "WebhookConnector.method",
+      "spec_path": "/data_model/enums/3"
+    }
+  ],
+  "provisories": [
+    {
+      "id": "POA-004",
+      "topic": "Card.cardTypeId opcional",
+      "decision": "Manter cardTypeId opcional até decisão formal.",
+      "replacement_plan": "Atualizar contrato quando definição Card ↔ CardType for confirmada."
+    },
+    {
+      "id": "POA-003",
+      "topic": "Sessão/autenticação",
+      "decision": "Sessão mock com token string.",
+      "replacement_plan": "Substituir por contrato real quando mecanismo de autenticação for definido."
+    },
+    {
+      "id": "TBD-LabelFields",
+      "topic": "Campos de Label",
+      "decision": "Manter apenas name até definição de atributos adicionais (ex.: cor).",
+      "replacement_plan": "Expandir Label quando spec detalhar." 
+    },
+    {
+      "id": "TBD-UserRoles",
+      "topic": "Papéis e status do usuário",
+      "decision": "Roles e status como strings abertas.",
+      "replacement_plan": "Definir enums quando RBAC for especificado."
+    }
+  ]
+}
