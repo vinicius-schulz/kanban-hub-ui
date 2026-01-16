@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import type { Board, Card, ColumnId } from "@/modules/_shared/domain/domain.contracts";
+import type { Board, Card, ColumnId, JSONValue } from "@/modules/_shared/domain/domain.contracts";
 import {
   BOARD_CARDS_PAGE_SIZE,
   buildBoardCardsState,
@@ -33,12 +33,25 @@ interface KanbanBoardProps {
 }
 
 const getCardTitle = (card: Card) => {
-  const title = card.cardData?.inputs?.titulo;
-  if (typeof title === "string" && title.trim()) {
+  const title = formatJsonValue(card.cardData?.inputs?.titulo);
+  if (title.trim()) {
     return title;
   }
 
   return "Card sem título";
+};
+
+const formatJsonValue = (value: JSONValue | undefined) => {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return JSON.stringify(value);
 };
 
 export const KanbanBoard = ({ board }: KanbanBoardProps) => {
@@ -220,11 +233,14 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
                             {getCardTitle(card)}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {card.cardData?.inputs?.impacto ?? "Sem descrição"}
+                            {formatJsonValue(card.cardData?.inputs?.impacto) || "Sem descrição"}
                           </Typography>
                           <Stack direction="row" spacing={1}>
-                            <Chip label={card.props?.prioridade ?? "Sem prioridade"} size="small" />
-                            <Chip label={card.props?.sla ?? "Sem SLA"} size="small" variant="outlined" />
+                            <Chip
+                              label={formatJsonValue(card.props?.prioridade) || "Sem prioridade"}
+                              size="small"
+                            />
+                            <Chip label={formatJsonValue(card.props?.sla) || "Sem SLA"} size="small" variant="outlined" />
                           </Stack>
                         </Stack>
                       </Paper>

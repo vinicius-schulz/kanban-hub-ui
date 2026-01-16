@@ -11,7 +11,6 @@ import {
   Select,
   Stack,
   TextField,
-  Typography,
 } from "@mui/material";
 import React, { useMemo, useState } from "react";
 import type { BoardId, CardType, CardTypeId } from "@/modules/_shared/domain/domain.contracts";

@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import React, { useEffect, useMemo, useState } from "react";
-import type { Card, CardHistoryEntry, Webhook } from "@/modules/_shared/domain/domain.contracts";
+import type { Card, CardHistoryEntry, JSONValue, Webhook } from "@/modules/_shared/domain/domain.contracts";
 
 interface CardModalProps {
   open: boolean;
@@ -51,6 +51,19 @@ const renderJsonSection = (value: unknown) => {
       {JSON.stringify(value, null, 2)}
     </Box>
   );
+};
+
+const formatJsonValue = (value: JSONValue | undefined) => {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return JSON.stringify(value);
 };
 
 export const CardModal = ({ open, card, historyEntries, webhooks, onClose }: CardModalProps) => {
@@ -90,7 +103,7 @@ export const CardModal = ({ open, card, historyEntries, webhooks, onClose }: Car
       <DialogTitle sx={{ pr: 6 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <Typography variant="h6" fontWeight={600}>
-            {card.cardData?.inputs?.titulo ?? "Card"}
+            {formatJsonValue(card.cardData?.inputs?.titulo) || "Card"}
           </Typography>
           <Chip label={`ID ${card.id}`} size="small" />
         </Stack>

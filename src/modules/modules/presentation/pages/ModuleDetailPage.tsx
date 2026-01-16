@@ -21,7 +21,10 @@ export const ModuleDetailPage = () => {
   const { moduleId } = useParams();
   const resolvedModuleId = moduleId as ModuleId | undefined;
   const module = modulesFixture.find((item) => item.id === resolvedModuleId);
-  const nodes = resolvedModuleId ? getModuleTreeByModuleId(resolvedModuleId) : [];
+  const nodes = useMemo(
+    () => (resolvedModuleId ? getModuleTreeByModuleId(resolvedModuleId) : []),
+    [resolvedModuleId]
+  );
   const childrenMap = useMemo(() => buildChildrenMap(nodes), [nodes]);
   const [selectedNodeId, setSelectedNodeId] = useState<TreeNodeId | null>(null);
 
