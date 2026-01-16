@@ -1,0 +1,1027 @@
+--- FILE: package.json ---
+{
+  "name": "kanban-hub-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.18",
+    "@mui/material": "^5.15.18",
+    "@reduxjs/toolkit": "^2.2.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-redux": "^9.1.2",
+    "react-router-dom": "^6.23.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^8.57.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react-swc": "^3.7.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.7.1",
+    "vite": "^5.2.0"
+  }
+}
+
+
+--- FILE: vite.config.ts ---
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "node:path";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src")
+    }
+  }
+});
+
+
+--- FILE: tsconfig.json ---
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
+
+
+--- FILE: tsconfig.app.json ---
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src"]
+}
+
+
+--- FILE: tsconfig.node.json ---
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+
+--- FILE: eslint.config.js ---
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+
+export default [
+  { ignores: ["dist", "node_modules", "coverage"] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ["**/*.{ts,tsx}"] ,
+    languageOptions: {
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: "module"
+      }
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }]
+    }
+  }
+];
+
+
+--- FILE: .prettierrc ---
+{
+  "singleQuote": false,
+  "trailingComma": "none"
+}
+
+
+--- FILE: index.html ---
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kanban Hub</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+
+--- FILE: src/main.tsx ---
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { AppProviders } from "@/app/providers/AppProviders";
+import { AppRoutes } from "@/app/routes";
+import "@/index.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <AppProviders>
+      <AppRoutes />
+    </AppProviders>
+  </React.StrictMode>
+);
+
+
+--- FILE: src/index.css ---
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap");
+
+:root {
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  color: #1c1a18;
+  background-color: #f6f1ea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+
+--- FILE: src/vite-env.d.ts ---
+/// <reference types="vite/client" />
+
+
+--- FILE: src/app/bootstrap/initApp.ts ---
+export const initApp = async (): Promise<void> => {
+  return Promise.resolve();
+};
+
+
+--- FILE: src/app/providers/AppProviders.tsx ---
+import { PropsWithChildren } from "react";
+import { Provider } from "react-redux";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { BrowserRouter } from "react-router-dom";
+import { store } from "@/app/store";
+import theme from "@/modules/_shared/styles/theme";
+import { useAppInit } from "@/modules/_shared/hooks/useAppInit";
+
+export const AppProviders = ({ children }: PropsWithChildren) => {
+  const { isReady } = useAppInit();
+
+  if (!isReady) {
+    return null;
+  }
+
+  return (
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <BrowserRouter>{children}</BrowserRouter>
+      </ThemeProvider>
+    </Provider>
+  );
+};
+
+
+--- FILE: src/app/routes/index.tsx ---
+import { Navigate, Route, Routes } from "react-router-dom";
+import { routePaths } from "@/app/routes/routePaths";
+import { HealthPage } from "@/modules/healthcheck/presentation/pages/HealthPage";
+
+export const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path={routePaths.root} element={<HealthPage />} />
+      <Route path="*" element={<Navigate to={routePaths.root} replace />} />
+    </Routes>
+  );
+};
+
+
+--- FILE: src/app/routes/routePaths.ts ---
+export const routePaths = {
+  root: "/",
+  login: "/login",
+  modules: "/modules",
+  moduleDetail: "/modules/:moduleId",
+  boardKanban: "/boards/:boardId",
+  adminModules: "/admin/modules",
+  adminBoards: "/admin/boards",
+  adminCardTypes: "/admin/card-types",
+  adminIngressSources: "/admin/ingress-sources",
+  adminPlugins: "/admin/plugins",
+  adminConnectors: "/admin/connectors",
+  adminUsers: "/admin/users"
+} as const;
+
+
+--- FILE: src/app/store/index.ts ---
+import { configureStore } from "@reduxjs/toolkit";
+import { rootReducer } from "@/app/store/rootReducer";
+import { healthApi } from "@/modules/healthcheck/presentation/state/healthApi";
+
+export const store = configureStore({
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(healthApi.middleware)
+});
+
+export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>;
+
+
+--- FILE: src/app/store/rootReducer.ts ---
+import { combineReducers } from "@reduxjs/toolkit";
+import { healthApi } from "@/modules/healthcheck/presentation/state/healthApi";
+import { healthReducer } from "@/modules/healthcheck/presentation/state/healthSlice";
+
+export const rootReducer = combineReducers({
+  [healthApi.reducerPath]: healthApi.reducer,
+  health: healthReducer
+});
+
+export type RootState = ReturnType<typeof rootReducer>;
+
+
+--- FILE: src/app/store/typedHooks.ts ---
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/app/store";
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+
+--- FILE: src/app/config/env.ts ---
+export const env = {
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? "",
+  apiMock: import.meta.env.VITE_API_MOCK === "true"
+};
+
+
+--- FILE: src/app/config/constants.ts ---
+export const APP_NAME = "Kanban Hub";
+
+
+--- FILE: src/app/index.ts ---
+export { AppProviders } from "@/app/providers/AppProviders";
+export { AppRoutes } from "@/app/routes";
+
+
+--- FILE: src/core/contracts/ILogger.ts ---
+export interface ILogger {
+  info(message: string, meta?: Record<string, unknown>): void;
+  warn(message: string, meta?: Record<string, unknown>): void;
+  error(message: string, meta?: Record<string, unknown>): void;
+}
+
+
+--- FILE: src/core/errors/AppError.ts ---
+export class AppError extends Error {
+  public readonly code: string;
+  public readonly status?: number;
+
+  constructor(message: string, code = "APP_ERROR", status?: number) {
+    super(message);
+    this.code = code;
+    this.status = status;
+  }
+}
+
+
+--- FILE: src/core/utils/guard.ts ---
+export const assertDefined = <T>(value: T, message: string): asserts value is NonNullable<T> => {
+  if (value === undefined || value === null) {
+    throw new Error(message);
+  }
+};
+
+
+--- FILE: src/infra/http/apiClient.ts ---
+import { env } from "@/app/config/env";
+import { AppError } from "@/core/errors/AppError";
+
+export type RequestOptions = {
+  path: string;
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  body?: unknown;
+  headers?: Record<string, string>;
+};
+
+const buildUrl = (path: string) => {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  if (!env.apiBaseUrl) {
+    return normalized;
+  }
+  return `${env.apiBaseUrl}${normalized}`;
+};
+
+export const apiClient = {
+  async request<T>({ path, method = "GET", body, headers }: RequestOptions): Promise<T> {
+    if (env.apiMock && path === "/health") {
+      return {
+        status: "ok",
+        timestamp: new Date().toISOString()
+      } as T;
+    }
+
+    const response = await fetch(buildUrl(path), {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...headers
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+
+    if (!response.ok) {
+      throw new AppError("Erro na requisição", "HTTP_ERROR", response.status);
+    }
+
+    return (await response.json()) as T;
+  }
+};
+
+
+--- FILE: src/infra/di/container.ts ---
+import { healthHttpRepository } from "@/modules/healthcheck/infra/api/healthHttpRepository";
+
+export const container = {
+  healthRepository: healthHttpRepository
+};
+
+
+--- FILE: src/modules/_shared/styles/design.tokens.json ---
+{
+  "color": {
+    "primary": {
+      "main": "#0F4C5C",
+      "dark": "#0B3945",
+      "light": "#2A6B7C"
+    },
+    "secondary": {
+      "main": "#F2A65A",
+      "dark": "#D68636",
+      "light": "#F7C28B"
+    },
+    "neutral": {
+      "0": "#FFFFFF",
+      "50": "#FAF7F2",
+      "100": "#F3EEE6",
+      "900": "#1C1A18"
+    },
+    "success": {
+      "main": "#2E7D32"
+    },
+    "warning": {
+      "main": "#ED6C02"
+    },
+    "error": {
+      "main": "#D32F2F"
+    },
+    "info": {
+      "main": "#0277BD"
+    },
+    "bg": {
+      "page": "#F6F1EA",
+      "surface": "#FFFFFF",
+      "elevated": "#FFFCF8"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "heading": "Sora, \"Segoe UI\", sans-serif",
+      "body": "\"Source Sans 3\", \"Segoe UI\", sans-serif"
+    },
+    "scale": {
+      "xs": 12,
+      "sm": 14,
+      "md": 16,
+      "lg": 20,
+      "xl": 28,
+      "xxl": 36
+    }
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "xxl": 48
+  },
+  "radius": {
+    "sm": 6,
+    "md": 10,
+    "lg": 16,
+    "xl": 24
+  },
+  "shadow": {
+    "sm": "0 1px 2px rgba(28, 26, 24, 0.08)",
+    "md": "0 6px 18px rgba(28, 26, 24, 0.12)",
+    "lg": "0 12px 28px rgba(28, 26, 24, 0.18)"
+  },
+  "layout": {
+    "maxWidth": 1200,
+    "gutter": 24,
+    "headerHeight": 64,
+    "sidebarWidth": 280,
+    "rightRailWidth": 320
+  }
+}
+
+
+--- FILE: src/modules/_shared/styles/theme.ts ---
+import { createTheme } from "@mui/material/styles";
+import tokens from "./design.tokens.json";
+
+const theme = createTheme({
+  palette: {
+    mode: "light",
+    primary: {
+      main: tokens.color.primary.main,
+      dark: tokens.color.primary.dark,
+      light: tokens.color.primary.light
+    },
+    secondary: {
+      main: tokens.color.secondary.main,
+      dark: tokens.color.secondary.dark,
+      light: tokens.color.secondary.light
+    },
+    success: {
+      main: tokens.color.success.main
+    },
+    warning: {
+      main: tokens.color.warning.main
+    },
+    error: {
+      main: tokens.color.error.main
+    },
+    info: {
+      main: tokens.color.info.main
+    },
+    background: {
+      default: tokens.color.bg.page,
+      paper: tokens.color.bg.surface
+    },
+    text: {
+      primary: tokens.color.neutral[900],
+      secondary: "rgba(28, 26, 24, 0.72)"
+    },
+    divider: "rgba(28, 26, 24, 0.12)"
+  },
+  typography: {
+    fontFamily: tokens.typography.fontFamily.body,
+    h1: {
+      fontFamily: tokens.typography.fontFamily.heading,
+      fontSize: tokens.typography.scale.xxl,
+      fontWeight: 600
+    },
+    h2: {
+      fontFamily: tokens.typography.fontFamily.heading,
+      fontSize: tokens.typography.scale.xl,
+      fontWeight: 600
+    },
+    h3: {
+      fontFamily: tokens.typography.fontFamily.heading,
+      fontSize: tokens.typography.scale.lg,
+      fontWeight: 600
+    },
+    h4: {
+      fontFamily: tokens.typography.fontFamily.heading,
+      fontSize: tokens.typography.scale.md,
+      fontWeight: 600
+    },
+    body1: {
+      fontSize: tokens.typography.scale.md
+    },
+    body2: {
+      fontSize: tokens.typography.scale.sm
+    },
+    caption: {
+      fontSize: tokens.typography.scale.xs
+    },
+    button: {
+      fontFamily: tokens.typography.fontFamily.heading,
+      textTransform: "none",
+      fontWeight: 600
+    }
+  },
+  shape: {
+    borderRadius: tokens.radius.md
+  },
+  spacing: tokens.spacing.md,
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: tokens.color.bg.surface,
+          color: tokens.color.neutral[900],
+          boxShadow: tokens.shadow.sm
+        }
+      }
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: tokens.color.bg.elevated,
+          borderRight: `1px solid rgba(28, 26, 24, 0.08)`
+        }
+      }
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: tokens.radius.sm,
+          padding: `${tokens.spacing.sm}px ${tokens.spacing.md}px`
+        },
+        containedPrimary: {
+          boxShadow: "none"
+        },
+        outlinedPrimary: {
+          borderWidth: 2
+        }
+      }
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: tokens.radius.lg,
+          border: "1px solid rgba(28, 26, 24, 0.08)",
+          boxShadow: tokens.shadow.sm
+        }
+      }
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: "none",
+          borderRadius: tokens.radius.md
+        }
+      }
+    },
+    MuiTabs: {
+      styleOverrides: {
+        root: {
+          minHeight: 44
+        },
+        indicator: {
+          height: 3,
+          borderRadius: tokens.radius.sm
+        }
+      }
+    },
+    MuiTable: {
+      styleOverrides: {
+        root: {
+          borderCollapse: "separate",
+          borderSpacing: "0 4px"
+        }
+      }
+    }
+  }
+});
+
+export default theme;
+
+
+--- FILE: src/modules/_shared/hooks/useAppInit.ts ---
+import { useEffect, useState } from "react";
+import { initApp } from "@/app/bootstrap/initApp";
+
+export const useAppInit = () => {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    initApp().finally(() => {
+      if (isMounted) {
+        setIsReady(true);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return { isReady };
+};
+
+
+--- FILE: src/modules/_shared/ui/PageLayout.tsx ---
+import { ReactNode, useState } from "react";
+import {
+  AppBar,
+  Box,
+  Divider,
+  Drawer,
+  IconButton,
+  Toolbar,
+  useMediaQuery,
+  useTheme
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import tokens from "@/modules/_shared/styles/design.tokens.json";
+
+type PageLayoutProps = {
+  header?: ReactNode;
+  nav?: ReactNode;
+  content: ReactNode;
+  footer?: ReactNode;
+  rightRail?: ReactNode;
+};
+
+export const PageLayout = ({ header, nav, content, footer, rightRail }: PageLayoutProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [isNavOpen, setIsNavOpen] = useState(false);
+
+  const drawerContent = (
+    <Box display="flex" flexDirection="column" height="100%">
+      <Box padding={2}>{nav}</Box>
+    </Box>
+  );
+
+  return (
+    <Box display="flex" flexDirection="column" minHeight="100vh">
+      <AppBar position="sticky" elevation={0}>
+        <Toolbar sx={{ gap: 2 }}>
+          {nav && isMobile ? (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() => setIsNavOpen(true)}
+              aria-label="Abrir navegação"
+            >
+              <MenuIcon />
+            </IconButton>
+          ) : null}
+          <Box flex={1}>{header}</Box>
+        </Toolbar>
+      </AppBar>
+
+      <Box display="flex" flex={1}>
+        {nav && !isMobile ? (
+          <Drawer
+            variant="permanent"
+            sx={{
+              width: tokens.layout.sidebarWidth,
+              flexShrink: 0,
+              [`& .MuiDrawer-paper`]: {
+                width: tokens.layout.sidebarWidth,
+                boxSizing: "border-box"
+              }
+            }}
+          >
+            <Toolbar />
+            {drawerContent}
+          </Drawer>
+        ) : null}
+
+        {nav && isMobile ? (
+          <Drawer open={isNavOpen} onClose={() => setIsNavOpen(false)} variant="temporary">
+            {drawerContent}
+          </Drawer>
+        ) : null}
+
+        <Box
+          component="main"
+          flex={1}
+          padding={{ xs: 2, md: 3 }}
+          maxWidth={tokens.layout.maxWidth}
+          width="100%"
+          margin="0 auto"
+        >
+          {content}
+        </Box>
+
+        {rightRail && !isMobile ? (
+          <Box
+            width={tokens.layout.rightRailWidth}
+            padding={3}
+            borderLeft={`1px solid ${theme.palette.divider}`}
+            bgcolor={theme.palette.background.paper}
+          >
+            {rightRail}
+          </Box>
+        ) : null}
+      </Box>
+
+      {footer ? (
+        <Box component="footer" padding={2} bgcolor={theme.palette.background.paper}>
+          <Divider sx={{ marginBottom: 2 }} />
+          {footer}
+        </Box>
+      ) : null}
+    </Box>
+  );
+};
+
+
+--- FILE: src/modules/_shared/ui/LoadingState.tsx ---
+import { Box, CircularProgress, Typography } from "@mui/material";
+
+type LoadingStateProps = {
+  label?: string;
+};
+
+export const LoadingState = ({ label = "Carregando..." }: LoadingStateProps) => {
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      padding={6}
+      gap={2}
+    >
+      <CircularProgress color="primary" />
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+    </Box>
+  );
+};
+
+
+--- FILE: src/modules/_shared/types/index.ts ---
+import { ReactNode } from "react";
+
+export type LayoutSlot = ReactNode;
+
+export type NavItem = {
+  label: string;
+  href: string;
+};
+
+
+--- FILE: src/modules/healthcheck/domain/entities/HealthStatus.ts ---
+export type HealthStatus = {
+  status: string;
+  timestamp: string;
+};
+
+
+--- FILE: src/modules/healthcheck/domain/ports/HealthRepository.ts ---
+import type { HealthStatus } from "@/modules/healthcheck/domain/entities/HealthStatus";
+
+export interface HealthRepository {
+  getStatus(): Promise<HealthStatus>;
+}
+
+
+--- FILE: src/modules/healthcheck/application/useCases/getHealthStatus.ts ---
+import type { HealthRepository } from "@/modules/healthcheck/domain/ports/HealthRepository";
+
+export const getHealthStatus = (repository: HealthRepository) => {
+  return repository.getStatus();
+};
+
+
+--- FILE: src/modules/healthcheck/infra/api/healthHttpRepository.ts ---
+import { apiClient } from "@/infra/http/apiClient";
+import type { HealthRepository } from "@/modules/healthcheck/domain/ports/HealthRepository";
+import type { HealthStatus } from "@/modules/healthcheck/domain/entities/HealthStatus";
+
+export const healthHttpRepository: HealthRepository = {
+  getStatus: () => apiClient.request<HealthStatus>({ path: "/health" })
+};
+
+
+--- FILE: src/modules/healthcheck/presentation/state/healthApi.ts ---
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { apiClient } from "@/infra/http/apiClient";
+import type { HealthStatus } from "@/modules/healthcheck/domain/entities/HealthStatus";
+
+type QueryArgs = {
+  url: string;
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+};
+
+const baseQuery = async ({ url, method = "GET" }: QueryArgs) => {
+  try {
+    const data = await apiClient.request<HealthStatus>({ path: url, method });
+    return { data };
+  } catch (error) {
+    return {
+      error: {
+        status: "CUSTOM_ERROR",
+        data: error instanceof Error ? error.message : "Erro desconhecido"
+      }
+    };
+  }
+};
+
+export const healthApi = createApi({
+  reducerPath: "healthApi",
+  baseQuery,
+  endpoints: (builder) => ({
+    getHealth: builder.query<HealthStatus, void>({
+      query: () => ({ url: "/health" })
+    })
+  })
+});
+
+export const { useGetHealthQuery } = healthApi;
+
+
+--- FILE: src/modules/healthcheck/presentation/state/healthSlice.ts ---
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { HealthStatus } from "@/modules/healthcheck/domain/entities/HealthStatus";
+
+type HealthState = {
+  lastStatus: HealthStatus | null;
+};
+
+const initialState: HealthState = {
+  lastStatus: null
+};
+
+const healthSlice = createSlice({
+  name: "health",
+  initialState,
+  reducers: {
+    setHealthStatus(state, action: PayloadAction<HealthStatus>) {
+      state.lastStatus = action.payload;
+    }
+  }
+});
+
+export const { setHealthStatus } = healthSlice.actions;
+export const healthReducer = healthSlice.reducer;
+
+
+--- FILE: src/modules/healthcheck/presentation/state/selectors.ts ---
+import type { RootState } from "@/app/store";
+
+export const selectHealthStatus = (state: RootState) => state.health.lastStatus;
+
+
+--- FILE: src/modules/healthcheck/presentation/components/HealthCard.tsx ---
+import { Card, CardContent, Chip, Stack, Typography } from "@mui/material";
+import type { HealthStatus } from "@/modules/healthcheck/domain/entities/HealthStatus";
+
+type HealthCardProps = {
+  data: HealthStatus;
+};
+
+export const HealthCard = ({ data }: HealthCardProps) => {
+  return (
+    <Card>
+      <CardContent>
+        <Stack spacing={2}>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography variant="h3">Status do serviço</Typography>
+            <Chip
+              label={data.status.toUpperCase()}
+              color={data.status === "ok" ? "success" : "warning"}
+              size="small"
+            />
+          </Stack>
+          <Typography variant="body2" color="text.secondary">
+            Última verificação: {new Date(data.timestamp).toLocaleString("pt-BR")}
+          </Typography>
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+};
+
+
+--- FILE: src/modules/healthcheck/presentation/pages/HealthPage.tsx ---
+import { useEffect } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  Stack,
+  Typography
+} from "@mui/material";
+import { PageLayout } from "@/modules/_shared/ui/PageLayout";
+import { LoadingState } from "@/modules/_shared/ui/LoadingState";
+import { HealthCard } from "@/modules/healthcheck/presentation/components/HealthCard";
+import { useGetHealthQuery } from "@/modules/healthcheck/presentation/state/healthApi";
+import { useAppDispatch } from "@/app/store/typedHooks";
+import { setHealthStatus } from "@/modules/healthcheck/presentation/state/healthSlice";
+import { APP_NAME } from "@/app/config/constants";
+
+export const HealthPage = () => {
+  const dispatch = useAppDispatch();
+  const { data, isLoading, isError, refetch } = useGetHealthQuery();
+
+  useEffect(() => {
+    if (data) {
+      dispatch(setHealthStatus(data));
+    }
+  }, [data, dispatch]);
+
+  const header = (
+    <Stack direction="row" alignItems="center" justifyContent="space-between">
+      <Typography variant="h2" component="span">
+        {APP_NAME}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        Operacional
+      </Typography>
+    </Stack>
+  );
+
+  const nav = (
+    <Stack spacing={2}>
+      <Box>
+        <Typography variant="overline" color="text.secondary">
+          Navegação
+        </Typography>
+        <Typography variant="body1">Módulos</Typography>
+      </Box>
+      <Box>
+        <Typography variant="overline" color="text.secondary">
+          Administração
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Disponível para Admin
+        </Typography>
+      </Box>
+    </Stack>
+  );
+
+  const content = (
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant="h4" gutterBottom>
+          Healthcheck
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Verificação end-to-end da infraestrutura de API e store.
+        </Typography>
+      </Box>
+      {isLoading ? (
+        <LoadingState />
+      ) : null}
+      {isError ? (
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => refetch()}>
+              Tentar novamente
+            </Button>
+          }
+        >
+          Não foi possível obter o status de saúde.
+        </Alert>
+      ) : null}
+      {data ? <HealthCard data={data} /> : null}
+    </Stack>
+  );
+
+  return <PageLayout header={header} nav={nav} content={content} />;
+};
+
+
