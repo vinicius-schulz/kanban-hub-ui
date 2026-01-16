@@ -4,6 +4,7 @@ import { routePaths } from "@/app/routes/routePaths";
 import { LoadingState } from "@/modules/_shared/ui/LoadingState";
 import { RequireAuth } from "@/modules/auth/presentation/guards/RequireAuth";
 import { LoginPage } from "@/modules/auth/presentation/pages/LoginPage";
+import { ModuleDetailPage } from "@/modules/modules/presentation/pages/ModuleDetailPage";
 import { ModulesPage } from "@/modules/modules/presentation/pages/ModulesPage";
 
 export const AppRoutes = () => {
@@ -16,6 +17,14 @@ export const AppRoutes = () => {
           element={
             <RequireAuth>
               <ModulesPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={routePaths.moduleDetail}
+          element={
+            <RequireAuth>
+              <ModuleDetailPage />
             </RequireAuth>
           }
         />
