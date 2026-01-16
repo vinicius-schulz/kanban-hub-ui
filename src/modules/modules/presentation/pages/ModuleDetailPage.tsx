@@ -4,6 +4,7 @@ import { Link as RouterLink, useParams } from "react-router-dom";
 import { routePaths } from "@/app/routes/routePaths";
 import type { ModuleId, TreeNode, TreeNodeId } from "@/modules/_shared/domain/domain.contracts";
 import { BoardPlaceholder } from "@/modules/boards/presentation/components/BoardPlaceholder";
+import { KanbanBoard } from "@/modules/boards/presentation/components/KanbanBoard";
 import { getBoardById } from "@/modules/boards/infra/boards.fixtures";
 import { getModuleTreeByModuleId } from "@/modules/modules/infra/moduleTree.fixtures";
 import { modulesFixture } from "@/modules/modules/infra/modules.fixtures";
@@ -76,7 +77,7 @@ export const ModuleDetailPage = () => {
             <List disablePadding>{renderNodes(null)}</List>
           </Paper>
 
-          <BoardPlaceholder board={selectedBoard} />
+          {selectedBoard ? <KanbanBoard board={selectedBoard} /> : <BoardPlaceholder board={null} />}
         </Box>
       </Stack>
     </Container>
