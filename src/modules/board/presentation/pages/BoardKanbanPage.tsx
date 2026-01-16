@@ -6,7 +6,7 @@ import {
   Chip,
   Grid,
   Stack,
-  Typography
+  Typography,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageLayout } from "@/modules/_shared/ui/PageLayout";
@@ -16,7 +16,14 @@ import { fixtures } from "@/core/domain/domain.fixtures";
 import { routePaths } from "@/app/routes/routePaths";
 import { getStoredSession } from "@/modules/auth/infra/mockAuth";
 import { LoadingState } from "@/modules/_shared/ui/LoadingState";
-import type { Card as CardEntity, JsonValue } from "@/core/domain/domain.contracts";
+import { CardDetailsModal } from "@/modules/card/presentation/components/CardDetailsModal";
+import type {
+  Card as CardEntity,
+  CardHistoryEvent,
+  CardId,
+  ColumnId,
+  JsonValue,
+} from "@/core/domain/domain.contracts";
 
 const isRecord = (value: JsonValue | null | undefined): value is Record<string, JsonValue> => {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -41,6 +48,19 @@ export const BoardKanbanPage = () => {
   const navigate = useNavigate();
   const [isSessionChecked, setIsSessionChecked] = useState(false);
   const sessionSnapshot = useMemo(() => getStoredSession(), []);
+  const [draggingCardId, setDraggingCardId] = useState<CardId | null>(null);
+  const [dragOverColumnId, setDragOverColumnId] = useState<ColumnId | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState<CardId | null>(null);
+  const [cards, setCards] = useState<CardEntity[]>(() =>
+    fixtures.cards.map((card) => ({
+      ...card,
+      cardData: card.cardData ? { ...card.cardData } : card.cardData,
+    }))
+  );
+  const [historyEvents, setHistoryEvents] = useState<CardHistoryEvent[]>(() =>
+    fixtures.historyEvents.map((event) => ({ ...event }))
+  );
 
   useEffect(() => {
     setIsSessionChecked(true);
@@ -72,15 +92,108 @@ export const BoardKanbanPage = () => {
     [boardId]
   );
 
-  const cards = useMemo(
-    () => fixtures.cards.filter((card) => card.boardId === boardId),
-    [boardId]
+  const boardCards = useMemo(
+    () => cards.filter((card) => card.boardId === boardId),
+    [boardId, cards]
   );
 
   const labelsById = useMemo(() => {
     const map = new Map(fixtures.labels.map((label) => [label.id, label]));
     return map;
   }, []);
+
+  const selectedCard = useMemo(
+    () => cards.find((card) => card.id === selectedCardId) ?? null,
+    [cards, selectedCardId]
+  );
+
+  const cardTypeFields = useMemo(() => {
+    if (!selectedCard?.cardTypeId) {
+      return [];
+    }
+    return fixtures.cardTypeFields.filter(
+      (field) => field.cardTypeId === selectedCard.cardTypeId
+    );
+  }, [selectedCard]);
+
+  const selectedCardHistory = useMemo(() => {
+    if (!selectedCard) {
+      return [];
+    }
+    return historyEvents.filter((event) => event.cardId === selectedCard.id);
+  }, [historyEvents, selectedCard]);
+
+  const handleDragStart = (cardId: CardId) => () => {
+    setDraggingCardId(cardId);
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingCardId(null);
+    setDragOverColumnId(null);
+    setIsDragging(false);
+  };
+
+  const handleDrop = (columnId: ColumnId) => {
+    if (!draggingCardId) {
+      return;
+    }
+    setCards((prev) =>
+      prev.map((card) =>
+        card.id === draggingCardId && card.columnId !== columnId
+          ? { ...card, columnId }
+          : card
+      )
+    );
+    const movedCard = cards.find((card) => card.id === draggingCardId);
+    if (movedCard && movedCard.columnId !== columnId) {
+      const originColumn = fixtures.columns.find((col) => col.id === movedCard.columnId);
+      const targetColumn = fixtures.columns.find((col) => col.id === columnId);
+      setHistoryEvents((prev) => [
+        ...prev,
+        {
+          id: (`evt-${Date.now()}` as CardHistoryEvent["id"]),
+          cardId: movedCard.id,
+          type: "card.moved",
+          summary: `Card movido de ${originColumn?.name ?? "coluna"} para ${
+            targetColumn?.name ?? "coluna"
+          }`,
+          payload: { from: movedCard.columnId, to: columnId },
+          createdAt: new Date().toISOString(),
+          createdBy: sessionSnapshot?.userId ?? fixtures.users[0].id,
+        },
+      ]);
+    }
+    handleDragEnd();
+  };
+
+  const handleOpenCard = (cardId: CardId) => () => {
+    if (isDragging) {
+      return;
+    }
+    setSelectedCardId(cardId);
+  };
+
+  const handleCloseCard = () => {
+    setSelectedCardId(null);
+  };
+
+  const handleSaveCard = (updatedCard: CardEntity, summary: string) => {
+    setCards((prev) => prev.map((card) => (card.id === updatedCard.id ? updatedCard : card)));
+    setHistoryEvents((prev) => [
+      ...prev,
+      {
+        id: (`evt-${Date.now()}` as CardHistoryEvent["id"]),
+        cardId: updatedCard.id,
+        type: "card.updated",
+        summary,
+        payload: updatedCard.cardData ?? null,
+        createdAt: new Date().toISOString(),
+        createdBy: sessionSnapshot?.userId ?? fixtures.users[0].id,
+      },
+    ]);
+    setSelectedCardId(updatedCard.id);
+  };
 
   const header = (
     <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="baseline">
@@ -94,7 +207,7 @@ export const BoardKanbanPage = () => {
       </Box>
       <Box marginLeft="auto">
         <Typography variant="body2" color="text.secondary">
-          Visualização Kanban (somente leitura)
+          Arraste cards entre colunas ou clique para editar detalhes.
         </Typography>
       </Box>
     </Stack>
@@ -118,10 +231,24 @@ export const BoardKanbanPage = () => {
       ) : (
         <Grid container spacing={3} alignItems="flex-start">
           {columns.map((column) => {
-            const columnCards = cards.filter((card) => card.columnId === column.id);
+            const columnCards = boardCards.filter((card) => card.columnId === column.id);
+            const isDragTarget = dragOverColumnId === column.id;
             return (
               <Grid item xs={12} md={4} key={column.id}>
-                <Card elevation={0} sx={{ border: "1px solid", borderColor: "divider" }}>
+                <Card
+                  elevation={0}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    setDragOverColumnId(column.id);
+                  }}
+                  onDragLeave={() => setDragOverColumnId(null)}
+                  onDrop={() => handleDrop(column.id)}
+                  sx={{
+                    border: "1px solid",
+                    borderColor: isDragTarget ? "primary.main" : "divider",
+                    bgcolor: isDragTarget ? "action.hover" : "background.paper",
+                  }}
+                >
                   <CardContent>
                     <Stack spacing={2}>
                       <Box>
@@ -142,6 +269,10 @@ export const BoardKanbanPage = () => {
                             <Card
                               key={card.id}
                               elevation={0}
+                              draggable
+                              onDragStart={handleDragStart(card.id)}
+                              onDragEnd={handleDragEnd}
+                              onClick={handleOpenCard(card.id)}
                               sx={{ border: "1px solid", borderColor: "divider" }}
                             >
                               <CardContent>
@@ -186,10 +317,21 @@ export const BoardKanbanPage = () => {
   }
 
   return (
-    <PageLayout
-      header={header}
-      nav={<ModulesNav activePath={routePaths.modules} />}
-      content={content}
-    />
+    <>
+      <PageLayout
+        header={header}
+        nav={<ModulesNav activePath={routePaths.modules} />}
+        content={content}
+      />
+      <CardDetailsModal
+        open={Boolean(selectedCard)}
+        card={selectedCard}
+        cardTypeFields={cardTypeFields}
+        labels={fixtures.labels}
+        historyEvents={selectedCardHistory}
+        onClose={handleCloseCard}
+        onSave={handleSaveCard}
+      />
+    </>
   );
 };
