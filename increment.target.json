@@ -1,5 +1,5 @@
 {
-  "increment_id": "INC-006",
-  "mode": "IMPLEMENT",
-  "notes": "auto-advance"
+  "increment_id": "__END__",
+  "mode": "GATE_ONLY",
+  "notes": "no more increments"
 }
