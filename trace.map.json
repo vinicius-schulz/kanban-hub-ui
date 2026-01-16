@@ -1,0 +1,276 @@
+{
+  "meta": {
+    "schema_version": "2.0",
+    "generated_by": "AGENT_5",
+    "source_of_truth": "spec.resolved.json"
+  },
+  "requirements": [
+    {
+      "req_id": "RF-001",
+      "req_title": "Login e sessão",
+      "spec_paths": ["/functional_requirements/0"],
+      "mapped_to": {
+        "epics": ["EP-001"],
+        "stories": ["ST-001"],
+        "tasks": ["TSK-001", "TSK-002", "TSK-003"],
+        "increments": ["INC-001"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/auth/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/auth/application", "src/app/store"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-002",
+      "req_title": "Listagem de módulos",
+      "spec_paths": ["/functional_requirements/1"],
+      "mapped_to": {
+        "epics": ["EP-001"],
+        "stories": ["ST-002"],
+        "tasks": ["TSK-004", "TSK-005"],
+        "increments": ["INC-001"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/modules/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/modules/application"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-003",
+      "req_title": "Árvore do módulo e área principal",
+      "spec_paths": ["/functional_requirements/2"],
+      "mapped_to": {
+        "epics": ["EP-001"],
+        "stories": ["ST-003"],
+        "tasks": ["TSK-006", "TSK-007"],
+        "increments": ["INC-002"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/modules/presentation"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-004",
+      "req_title": "Carregar kanban ao selecionar folha",
+      "spec_paths": ["/functional_requirements/3"],
+      "mapped_to": {
+        "epics": ["EP-001"],
+        "stories": ["ST-003"],
+        "tasks": ["TSK-008"],
+        "increments": ["INC-002"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/boards/presentation"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-005",
+      "req_title": "Mover cards entre colunas",
+      "spec_paths": ["/functional_requirements/4"],
+      "mapped_to": {
+        "epics": ["EP-002"],
+        "stories": ["ST-006"],
+        "tasks": ["TSK-015", "TSK-016"],
+        "increments": ["INC-004"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/boards/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/boards/application"] }
+      ],
+      "notes": ["Dependente de decisão POA-005 para campo de ordenação."]
+    },
+    {
+      "req_id": "RF-006",
+      "req_title": "Modal do card com seções",
+      "spec_paths": ["/functional_requirements/5"],
+      "mapped_to": {
+        "epics": ["EP-002"],
+        "stories": ["ST-005"],
+        "tasks": ["TSK-012", "TSK-013"],
+        "increments": ["INC-003"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/boards/presentation"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-007",
+      "req_title": "Buckets de dados do card",
+      "spec_paths": ["/functional_requirements/6"],
+      "mapped_to": {
+        "epics": ["EP-002"],
+        "stories": ["ST-005"],
+        "tasks": ["TSK-012", "TSK-013"],
+        "increments": ["INC-003"]
+      },
+      "deliverables_hint": [
+        { "type": "domain", "target_paths_hint": ["src/modules/boards/domain"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-008",
+      "req_title": "Histórico estruturado",
+      "spec_paths": ["/functional_requirements/7"],
+      "mapped_to": {
+        "epics": ["EP-002"],
+        "stories": ["ST-005"],
+        "tasks": ["TSK-014"],
+        "increments": ["INC-003"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/boards/presentation"] },
+        { "type": "domain", "target_paths_hint": ["src/modules/boards/domain"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-009",
+      "req_title": "Configuração do board",
+      "spec_paths": ["/functional_requirements/8"],
+      "mapped_to": {
+        "epics": ["EP-003"],
+        "stories": ["ST-009"],
+        "tasks": ["TSK-021", "TSK-022", "TSK-023"],
+        "increments": ["INC-005"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/boards/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/boards/application"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-010",
+      "req_title": "CRUD de módulos/boards/colunas/labels",
+      "spec_paths": ["/functional_requirements/9"],
+      "mapped_to": {
+        "epics": ["EP-003"],
+        "stories": ["ST-010"],
+        "tasks": ["TSK-024", "TSK-025", "TSK-026"],
+        "increments": ["INC-006"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/admin/presentation"] },
+        { "type": "domain", "target_paths_hint": ["src/modules/admin/domain"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-011",
+      "req_title": "CRUD de CardTypes e Fields",
+      "spec_paths": ["/functional_requirements/10"],
+      "mapped_to": {
+        "epics": ["EP-003"],
+        "stories": ["ST-011"],
+        "tasks": ["TSK-027", "TSK-028"],
+        "increments": ["INC-006"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/admin/presentation"] },
+        { "type": "domain", "target_paths_hint": ["src/modules/admin/domain"] }
+      ],
+      "notes": ["Estrutura final depende de POA-003."]
+    },
+    {
+      "req_id": "RF-012",
+      "req_title": "CRUD de IngressSources",
+      "spec_paths": ["/functional_requirements/11"],
+      "mapped_to": {
+        "epics": ["EP-003"],
+        "stories": ["ST-012"],
+        "tasks": ["TSK-029", "TSK-030"],
+        "increments": ["INC-006"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/admin/presentation"] },
+        { "type": "domain", "target_paths_hint": ["src/modules/admin/domain"] }
+      ],
+      "notes": ["Campo externalObjectIdPath impactado por POA-004."]
+    },
+    {
+      "req_id": "RF-013",
+      "req_title": "Registro de plugins",
+      "spec_paths": ["/functional_requirements/12"],
+      "mapped_to": {
+        "epics": ["EP-003"],
+        "stories": ["ST-013"],
+        "tasks": ["TSK-031", "TSK-032"],
+        "increments": ["INC-006"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/admin/presentation"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-014",
+      "req_title": "CRUD de conectores webhook",
+      "spec_paths": ["/functional_requirements/13"],
+      "mapped_to": {
+        "epics": ["EP-003"],
+        "stories": ["ST-014"],
+        "tasks": ["TSK-033", "TSK-034"],
+        "increments": ["INC-006"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/admin/presentation"] },
+        { "type": "domain", "target_paths_hint": ["src/modules/admin/domain"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-015",
+      "req_title": "Criação manual de card",
+      "spec_paths": ["/functional_requirements/14"],
+      "mapped_to": {
+        "epics": ["EP-002"],
+        "stories": ["ST-007"],
+        "tasks": ["TSK-017", "TSK-018"],
+        "increments": ["INC-004"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/boards/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/boards/application"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-016",
+      "req_title": "Execução manual de webhook",
+      "spec_paths": ["/functional_requirements/15"],
+      "mapped_to": {
+        "epics": ["EP-002"],
+        "stories": ["ST-008"],
+        "tasks": ["TSK-019", "TSK-020"],
+        "increments": ["INC-004"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/boards/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/boards/application"] }
+      ],
+      "notes": []
+    },
+    {
+      "req_id": "RF-017",
+      "req_title": "Paginação lazy por coluna",
+      "spec_paths": ["/functional_requirements/16"],
+      "mapped_to": {
+        "epics": ["EP-002"],
+        "stories": ["ST-004"],
+        "tasks": ["TSK-009", "TSK-010", "TSK-011"],
+        "increments": ["INC-003"]
+      },
+      "deliverables_hint": [
+        { "type": "ui", "target_paths_hint": ["src/modules/boards/presentation"] },
+        { "type": "state", "target_paths_hint": ["src/modules/boards/application"] }
+      ],
+      "notes": []
+    }
+  ]
+}

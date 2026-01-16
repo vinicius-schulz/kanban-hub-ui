@@ -1,0 +1,195 @@
+{
+  "entities": [
+    {
+      "name": "Module",
+      "spec_ids": ["ENT-001"],
+      "spec_paths": ["data_model.entities[0]"],
+      "notes": "Entidade de listagem de módulos."
+    },
+    {
+      "name": "TreeNode",
+      "spec_ids": ["ENT-002"],
+      "spec_paths": ["data_model.entities[1]"],
+      "notes": "Nó de árvore com parentId e boardId."
+    },
+    {
+      "name": "Board",
+      "spec_ids": ["ENT-003"],
+      "spec_paths": ["data_model.entities[2]"],
+      "notes": "Board com cardTypeId."
+    },
+    {
+      "name": "Column",
+      "spec_ids": ["ENT-004"],
+      "spec_paths": ["data_model.entities[3]"],
+      "notes": "Coluna com position."
+    },
+    {
+      "name": "Card",
+      "spec_ids": ["ENT-005"],
+      "spec_paths": ["data_model.entities[4]"],
+      "notes": "Card com buckets de dados e cardTypeId."
+    },
+    {
+      "name": "CardType",
+      "spec_ids": ["ENT-006"],
+      "spec_paths": ["data_model.entities[5]"],
+      "notes": "CardType com fields dinâmicos."
+    },
+    {
+      "name": "CardTypeField",
+      "spec_ids": ["ENT-007"],
+      "spec_paths": ["data_model.entities[6]"],
+      "notes": "Field com bindingRef e flags de preview/modal."
+    },
+    {
+      "name": "IngressSource",
+      "spec_ids": ["ENT-008"],
+      "spec_paths": ["data_model.entities[7]"],
+      "notes": "Configuração de ingresso com schema/mapping."
+    },
+    {
+      "name": "Plugin",
+      "spec_ids": ["ENT-009"],
+      "spec_paths": ["data_model.entities[8]"],
+      "notes": "Registro de plugin com status."
+    },
+    {
+      "name": "Webhook",
+      "spec_ids": ["ENT-010"],
+      "spec_paths": ["data_model.entities[9]"],
+      "notes": "Conector de saída com método e template."
+    },
+    {
+      "name": "Label",
+      "spec_ids": ["ENT-011"],
+      "spec_paths": ["data_model.entities[10]"],
+      "notes": "Label segregada por board."
+    },
+    {
+      "name": "User",
+      "spec_ids": ["ENT-012"],
+      "spec_paths": ["data_model.entities[11]"],
+      "notes": "Usuário com role e status."
+    },
+    {
+      "name": "CardHistoryEntry",
+      "spec_ids": ["ENT-013"],
+      "spec_paths": ["data_model.entities[12]"],
+      "notes": "Histórico estruturado de eventos do card."
+    }
+  ],
+  "business_rules": [
+    {
+      "rn_id": "RN-001",
+      "title": "Board e Card sempre possuem CardType",
+      "spec_paths": ["business_rules[0]"],
+      "contracts": ["Board.cardTypeId", "Card.cardTypeId"]
+    },
+    {
+      "rn_id": "RN-002",
+      "title": "Separação de buckets e regras de escrita",
+      "spec_paths": ["business_rules[1]"],
+      "contracts": [
+        "Card.sourceData",
+        "Card.cardData.inputs",
+        "Card.cardData.outputs",
+        "Card.props",
+        "Card.pluginData"
+      ]
+    },
+    {
+      "rn_id": "RN-003",
+      "title": "Histórico obrigatório e estruturado",
+      "spec_paths": ["business_rules[2]"],
+      "contracts": [
+        "CardHistoryEntry.type",
+        "CardHistoryEntry.summary",
+        "CardHistoryEntry.payload",
+        "CardHistoryEntry.createdAt",
+        "CardHistoryEntry.createdBy"
+      ]
+    },
+    {
+      "rn_id": "RN-004",
+      "title": "Warnings não bloqueiam e inserem null",
+      "spec_paths": ["business_rules[3]"],
+      "contracts": ["Webhook.bodyTemplate"]
+    },
+    {
+      "rn_id": "RN-005",
+      "title": "Ingress com externalObjectIdPath define create/update",
+      "spec_paths": ["business_rules[4]"],
+      "contracts": ["IngressSource.externalObjectIdPath"]
+    },
+    {
+      "rn_id": "RN-006",
+      "title": "Ordenação segue posição definida pelo usuário",
+      "spec_paths": ["business_rules[5]"],
+      "contracts": ["Column.position", "Card.position"]
+    },
+    {
+      "rn_id": "RN-007",
+      "title": "Plugin ausente no código não quebra card",
+      "spec_paths": ["business_rules[6]"],
+      "contracts": ["Plugin.status"]
+    },
+    {
+      "rn_id": "RN-008",
+      "title": "Templates de webhook aceitam variáveis de ingress e do card",
+      "spec_paths": ["business_rules[7]"],
+      "contracts": ["Webhook.bodyTemplate"]
+    }
+  ],
+  "provisionals": [
+    {
+      "id": "TBD-001",
+      "area": "IDs explícitos",
+      "reason": "Spec não lista campo id nas entidades; IDs são necessários para UI/state.",
+      "sources": ["spec.resolved.json"],
+      "replacement_plan": "Confirmar com PO/Backend se cada entidade terá id persistido e seu formato."
+    },
+    {
+      "id": "TBD-002",
+      "area": "Card.position",
+      "reason": "RN-006 requer ordenação, mas ENT-005 não define position.",
+      "sources": ["open_points.POA-005"],
+      "replacement_plan": "Definir campo oficial (position/orderIndex) e estratégia de ordenação."
+    },
+    {
+      "id": "TBD-003",
+      "area": "Card.idempotencyKey",
+      "reason": "RN-005 cita idempotência, mas ENT-005 não define o campo.",
+      "sources": ["open_points.POA-004"],
+      "replacement_plan": "Decidir se será idempotencyKey, externalObjectId ou chave composta."
+    },
+    {
+      "id": "TBD-004",
+      "area": "Card.boardId / Card.columnId",
+      "reason": "Relacionamento necessário para UI Kanban, mas não explicitado na entidade.",
+      "sources": ["use_cases.UC-002", "use_cases.UC-003"],
+      "replacement_plan": "Confirmar campos de relacionamento entre Card, Board e Column."
+    },
+    {
+      "id": "TBD-005",
+      "area": "Column.boardId",
+      "reason": "Colunas pertencem a um board, porém ENT-004 não define boardId.",
+      "sources": ["use_cases.UC-004"],
+      "replacement_plan": "Adicionar boardId ou definir vínculo via contexto de agregação."
+    },
+    {
+      "id": "TBD-006",
+      "area": "CardType persistence format",
+      "reason": "Formato de persistência do CardType é incerto (POA-003).",
+      "sources": ["open_points.POA-003"],
+      "replacement_plan": "Definir modelo (JSON Schema ou modelo próprio) e ajustar contratos."
+    },
+    {
+      "id": "TBD-007",
+      "area": "User.role/User.status enums",
+      "reason": "Enumeração de roles e status não definida no spec.",
+      "sources": ["open_points.POA-002"],
+      "replacement_plan": "Definir lista de roles e status para tipagem restrita."
+    }
+  ]
+}

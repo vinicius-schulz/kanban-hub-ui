@@ -1,0 +1,367 @@
+{
+  "meta": {
+    "schema_version": "2.0",
+    "generated_by": "AGENT_5",
+    "source_of_truth": "spec.resolved.json",
+    "planning_mode": "VERTICAL_SLICES",
+    "notes": [
+      "POA-003 (modelo de CardType), POA-004 (idempotência), POA-005 (ordenação de card) impactam incrementos futuros."
+    ]
+  },
+  "increment_0_domain_foundation": {
+    "id": "INC-000",
+    "title": "Domain Foundation — vocabulário mínimo",
+    "goal": "Definir contratos de domínio e fixtures mínimas para suportar UI e state dos fluxos principais.",
+    "scope_in": [
+      "Tipos base para Module, Board, Column, Card, CardType, Field, Label, IngressSource, Plugin, Webhook, User",
+      "Enums principais (Field.type, Field.mode, Plugin.status, Webhook.method)",
+      "Fixtures de exemplo para módulos, boards, cards e históricos"
+    ],
+    "scope_out": [
+      "UI completa",
+      "Integrações reais",
+      "Regras de negócio completas"
+    ],
+    "dependencies": [],
+    "deliverables": [
+      {
+        "type": "code",
+        "description": "Contratos de domínio e fixtures compartilhadas",
+        "target_paths_hint": [
+          "src/modules/_shared/types",
+          "src/modules/**/domain",
+          "src/modules/**/infra"
+        ]
+      }
+    ],
+    "gates": [
+      { "name": "typecheck", "command": "npm run typecheck", "required": true },
+      { "name": "lint", "command": "npm run lint", "required": true },
+      { "name": "build", "command": "npm run build", "required": true }
+    ],
+    "risk_notes": [
+      {
+        "level": "MEDIUM",
+        "reason": "POA-003 define estrutura final de CardType/Field",
+        "mitigation": "Modelar tipos flexíveis e marcar como provisório"
+      }
+    ],
+    "provisories": [
+      {
+        "what": "Modelo flexível de CardType/Field",
+        "because": "POA-003",
+        "replacement_plan": "Ajustar tipos após decisão do PO"
+      }
+    ],
+    "definition_of_done": [
+      "Contratos de domínio usados pelos incrementos seguintes",
+      "Fixtures mínimas disponíveis",
+      "Todos os gates required passam"
+    ]
+  },
+  "increments": [
+    {
+      "id": "INC-001",
+      "title": "Login + listagem de módulos",
+      "goal": "Permitir autenticação mockada e exibir módulos permitidos.",
+      "scope_in": [
+        "Tela de login",
+        "Sessão mock e guard simples",
+        "Listagem de módulos"
+      ],
+      "scope_out": [
+        "Permissões completas",
+        "Integração real de auth"
+      ],
+      "dependencies": ["INC-000"],
+      "stories": ["ST-001", "ST-002"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "UI e estado de autenticação mock",
+          "target_paths_hint": ["src/modules/auth", "src/app/routes"]
+        },
+        {
+          "type": "code",
+          "description": "Página de módulos com dados mock",
+          "target_paths_hint": ["src/modules/modules"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        {
+          "level": "LOW",
+          "reason": "Auth será mockada no MVP",
+          "mitigation": "Isolar adapter/guard para futura integração"
+        }
+      ],
+      "provisories": [
+        {
+          "what": "Sessão mockada",
+          "because": "Sem backend definido",
+          "replacement_plan": "Substituir por integração real"
+        }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Login e listagem demonstráveis",
+        "Critérios de aceitação das stories atendidos"
+      ]
+    },
+    {
+      "id": "INC-002",
+      "title": "Navegação de módulo e abertura de board",
+      "goal": "Exibir árvore do módulo e abrir o board ao selecionar uma folha.",
+      "scope_in": [
+        "Layout com árvore e área principal",
+        "Seleção de folhas com carregamento de board mock"
+      ],
+      "scope_out": [
+        "Kanban completo",
+        "Drag & drop"
+      ],
+      "dependencies": ["INC-001"],
+      "stories": ["ST-003"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "Layout e árvore do módulo",
+          "target_paths_hint": ["src/modules/modules/presentation"]
+        },
+        {
+          "type": "code",
+          "description": "Board placeholder carregado por seleção",
+          "target_paths_hint": ["src/modules/boards/presentation"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        {
+          "level": "LOW",
+          "reason": "POA-001 pode ajustar rotas",
+          "mitigation": "Centralizar paths em routePaths"
+        }
+      ],
+      "provisories": [
+        {
+          "what": "Rotas base conforme spec",
+          "because": "POA-001",
+          "replacement_plan": "Atualizar paths após decisão"
+        }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Árvore e board demonstráveis",
+        "Critérios de aceitação das stories atendidos"
+      ]
+    },
+    {
+      "id": "INC-003",
+      "title": "Kanban base + modal de card",
+      "goal": "Renderizar colunas, cards, lazy load mock e modal com buckets/histórico.",
+      "scope_in": [
+        "Renderização de colunas e cards",
+        "Contadores e lazy load mock",
+        "Modal do card com seções e histórico"
+      ],
+      "scope_out": [
+        "Drag & drop",
+        "Criação manual de card",
+        "Execução de webhook"
+      ],
+      "dependencies": ["INC-002"],
+      "stories": ["ST-004", "ST-005"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "UI do kanban base e modal do card",
+          "target_paths_hint": ["src/modules/boards/presentation"]
+        },
+        {
+          "type": "code",
+          "description": "State mock para cards/colunas/histórico",
+          "target_paths_hint": ["src/modules/boards/application"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        {
+          "level": "MEDIUM",
+          "reason": "Definição de posição de cards não está fechada",
+          "mitigation": "Manter lazy load separado de ordenação"
+        }
+      ],
+      "provisories": [
+        {
+          "what": "Lazy load e histórico mockados",
+          "because": "Sem backend definido",
+          "replacement_plan": "Trocar por chamadas reais"
+        }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Board e modal demonstráveis",
+        "Critérios de aceitação das stories atendidos"
+      ]
+    },
+    {
+      "id": "INC-004",
+      "title": "Interações do Kanban",
+      "goal": "Adicionar drag & drop, criação manual e execução de webhook.",
+      "scope_in": [
+        "Drag & drop com persistência local",
+        "Criação manual de card",
+        "Execução manual de webhook no card"
+      ],
+      "scope_out": [
+        "Integração real de webhook",
+        "Regras de permissão completas"
+      ],
+      "dependencies": ["INC-003"],
+      "stories": ["ST-006", "ST-007", "ST-008"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "Interações de board e ações manuais",
+          "target_paths_hint": ["src/modules/boards/presentation", "src/modules/boards/application"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        {
+          "level": "HIGH",
+          "reason": "POA-005 define campo de ordenação de cards",
+          "mitigation": "Implementar ordering provisório no state"
+        }
+      ],
+      "provisories": [
+        {
+          "what": "Campo de posição de card provisório",
+          "because": "POA-005",
+          "replacement_plan": "Atualizar modelo após decisão"
+        }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Drag & drop e ações manuais demonstráveis",
+        "Critérios de aceitação das stories atendidos"
+      ]
+    },
+    {
+      "id": "INC-005",
+      "title": "Configuração do board",
+      "goal": "Permitir configurar board via engrenagem com dados mock.",
+      "scope_in": [
+        "UI de configuração do board",
+        "Persistência mock de colunas/labels/cardType/ingress/webhook"
+      ],
+      "scope_out": [
+        "Persistência real",
+        "Validações avançadas"
+      ],
+      "dependencies": ["INC-003"],
+      "stories": ["ST-009"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "Tela de configuração do board",
+          "target_paths_hint": ["src/modules/boards/presentation", "src/modules/boards/application"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        {
+          "level": "MEDIUM",
+          "reason": "POA-003 afeta estrutura de CardType",
+          "mitigation": "Formulário flexível com JSON"
+        }
+      ],
+      "provisories": [
+        {
+          "what": "Configuração em estado mock",
+          "because": "Sem backend",
+          "replacement_plan": "Integrar com API"
+        }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Configuração demonstrável",
+        "Critérios de aceitação das stories atendidos"
+      ]
+    },
+    {
+      "id": "INC-006",
+      "title": "Administração de cadastros",
+      "goal": "Disponibilizar telas admin para CRUD dos cadastros principais.",
+      "scope_in": [
+        "CRUD de módulos/boards/colunas/labels",
+        "CRUD de CardTypes/Fields",
+        "CRUD de IngressSources",
+        "Registro de plugins",
+        "CRUD de conectores webhook"
+      ],
+      "scope_out": [
+        "Gestão de usuários/permissões completas",
+        "Integração real com backend"
+      ],
+      "dependencies": ["INC-001", "INC-005"],
+      "stories": ["ST-010", "ST-011", "ST-012", "ST-013", "ST-014"],
+      "deliverables": [
+        {
+          "type": "code",
+          "description": "Telas admin e formulários mock",
+          "target_paths_hint": ["src/modules/admin/presentation", "src/app/routes"]
+        },
+        {
+          "type": "code",
+          "description": "Modelos e fixtures admin",
+          "target_paths_hint": ["src/modules/admin/domain", "src/modules/admin/infra"]
+        }
+      ],
+      "gates": [
+        { "name": "typecheck", "command": "npm run typecheck", "required": true },
+        { "name": "lint", "command": "npm run lint", "required": true },
+        { "name": "build", "command": "npm run build", "required": true }
+      ],
+      "risk_notes": [
+        {
+          "level": "MEDIUM",
+          "reason": "POA-004 afeta externalObjectIdPath/idempotência",
+          "mitigation": "Campos textuais com validação simples"
+        }
+      ],
+      "provisories": [
+        {
+          "what": "CRUD mock sem persistência real",
+          "because": "Sem backend",
+          "replacement_plan": "Substituir por integrações reais"
+        }
+      ],
+      "definition_of_done": [
+        "Todos os gates required passam",
+        "Telas admin demonstráveis",
+        "Critérios de aceitação das stories atendidos"
+      ]
+    }
+  ]
+}

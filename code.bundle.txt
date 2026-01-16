@@ -1,0 +1,891 @@
+--- FILE: package.json ---
+{
+  "name": "kanban-hub-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.15",
+    "@mui/material": "^5.15.15",
+    "@reduxjs/toolkit": "^2.2.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-redux": "^9.1.2",
+    "react-router-dom": "^6.22.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10"
+  }
+}
+
+--- FILE: tsconfig.json ---
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}
+
+--- FILE: vite.config.ts ---
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
+});
+
+--- FILE: .eslintrc.cjs ---
+module.exports = {
+  env: {
+    browser: true,
+    es2020: true,
+  },
+  extends: [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:react-refresh/recommended",
+    "prettier",
+  ],
+  parserOptions: {
+    ecmaVersion: "latest",
+    sourceType: "module",
+  },
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
+  rules: {
+    "react/react-in-jsx-scope": "off",
+  },
+};
+
+--- FILE: .prettierrc ---
+{
+  "singleQuote": false,
+  "trailingComma": "all"
+}
+
+--- FILE: .gitignore ---
+node_modules
+dist
+.vite
+.DS_Store
+.env
+.env.*
+
+--- FILE: index.html ---
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kanban Hub UI</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+--- FILE: src/vite-env.d.ts ---
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_API_BASE_URL?: string;
+  readonly VITE_API_MOCK?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
+--- FILE: src/main.tsx ---
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { AppProviders } from "@/app/providers/AppProviders";
+import { AppRoutes } from "@/app/routes";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <AppProviders>
+      <AppRoutes />
+    </AppProviders>
+  </React.StrictMode>,
+);
+
+--- FILE: src/app/bootstrap/initApp.ts ---
+export const initApp = async () => {
+  return Promise.resolve();
+};
+
+--- FILE: src/app/providers/AppProviders.tsx ---
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import React from "react";
+import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
+import { store } from "@/app/store";
+import { theme } from "@/modules/_shared/styles/theme";
+
+interface AppProvidersProps {
+  children: React.ReactNode;
+}
+
+export const AppProviders = ({ children }: AppProvidersProps) => {
+  return (
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <BrowserRouter>{children}</BrowserRouter>
+      </ThemeProvider>
+    </Provider>
+  );
+};
+
+--- FILE: src/app/routes/index.tsx ---
+import React, { Suspense } from "react";
+import { Route, Routes } from "react-router-dom";
+import { routePaths } from "@/app/routes/routePaths";
+import { HealthPage } from "@/modules/healthcheck/presentation/pages/HealthPage";
+import { LoadingState } from "@/modules/_shared/ui/LoadingState";
+
+export const AppRoutes = () => {
+  return (
+    <Suspense fallback={<LoadingState message="Carregando rota..." />}>
+      <Routes>
+        <Route path={routePaths.health} element={<HealthPage />} />
+      </Routes>
+    </Suspense>
+  );
+};
+
+--- FILE: src/app/routes/routePaths.ts ---
+export const routePaths = {
+  health: "/",
+};
+
+--- FILE: src/app/store/index.ts ---
+import { configureStore } from "@reduxjs/toolkit";
+import { rootReducer } from "@/app/store/rootReducer";
+import { healthApi } from "@/modules/healthcheck/presentation/state/healthApi";
+
+export const store = configureStore({
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(healthApi.middleware),
+});
+
+export type AppDispatch = typeof store.dispatch;
+export type AppStore = typeof store;
+
+--- FILE: src/app/store/rootReducer.ts ---
+import { combineReducers } from "@reduxjs/toolkit";
+import { healthApi } from "@/modules/healthcheck/presentation/state/healthApi";
+import { healthSlice } from "@/modules/healthcheck/presentation/state/healthSlice";
+
+export const rootReducer = combineReducers({
+  health: healthSlice.reducer,
+  [healthApi.reducerPath]: healthApi.reducer,
+});
+
+export type RootState = ReturnType<typeof rootReducer>;
+
+--- FILE: src/app/store/typedHooks.ts ---
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "@/app/store";
+import type { RootState } from "@/app/store/rootReducer";
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+--- FILE: src/app/config/env.ts ---
+export const env = {
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? "",
+  apiMock: import.meta.env.VITE_API_MOCK === "true",
+};
+
+--- FILE: src/app/config/constants.ts ---
+export const APP_NAME = "Kanban Hub UI";
+
+--- FILE: src/app/index.ts ---
+export { AppProviders } from "@/app/providers/AppProviders";
+
+--- FILE: src/core/contracts/ILogger.ts ---
+export interface ILogger {
+  info(message: string): void;
+  warn(message: string): void;
+  error(message: string, error?: unknown): void;
+}
+
+--- FILE: src/core/errors/AppError.ts ---
+export class AppError extends Error {
+  public readonly status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = "AppError";
+    this.status = status;
+  }
+}
+
+--- FILE: src/core/utils/guard.ts ---
+export const assertDefined = <T>(value: T, message: string): asserts value is NonNullable<T> => {
+  if (value === null || value === undefined) {
+    throw new Error(message);
+  }
+};
+
+--- FILE: src/infra/http/apiClient.ts ---
+import { env } from "@/app/config/env";
+import { AppError } from "@/core/errors/AppError";
+
+const buildUrl = (path: string) => {
+  if (!env.apiBaseUrl) {
+    return path;
+  }
+  return `${env.apiBaseUrl}${path}`;
+};
+
+const getMockResponse = (path: string) => {
+  if (path === "/health") {
+    return {
+      status: "ok",
+      timestamp: new Date().toISOString(),
+    };
+  }
+  return null;
+};
+
+const parseResponse = async <T>(response: Response): Promise<T> => {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    return (await response.json()) as T;
+  }
+  return (await response.text()) as T;
+};
+
+export const apiClient = {
+  async request<T>(path: string, options: RequestInit = {}): Promise<T> {
+    if (env.apiMock) {
+      const mock = getMockResponse(path);
+      if (mock) {
+        return mock as T;
+      }
+    }
+
+    const response = await fetch(buildUrl(path), {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers ?? {}),
+      },
+    });
+
+    if (!response.ok) {
+      throw new AppError(
+        `Erro ao acessar ${path} (status ${response.status})`,
+        response.status,
+      );
+    }
+
+    return parseResponse<T>(response);
+  },
+  get<T>(path: string) {
+    return this.request<T>(path, { method: "GET" });
+  },
+};
+
+--- FILE: src/infra/di/container.ts ---
+import { healthHttpRepository } from "@/modules/healthcheck/infra/api/healthHttpRepository";
+
+export const container = {
+  healthRepository: healthHttpRepository,
+};
+
+--- FILE: src/modules/_shared/ui/PageLayout.tsx ---
+import { Box, Container, Typography } from "@mui/material";
+import React from "react";
+
+interface PageLayoutProps {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}
+
+export const PageLayout = ({ title, subtitle, children }: PageLayoutProps) => {
+  return (
+    <Container maxWidth="md" sx={{ py: 6 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" fontWeight={600} gutterBottom>
+          {title}
+        </Typography>
+        {subtitle ? (
+          <Typography variant="body1" color="text.secondary">
+            {subtitle}
+          </Typography>
+        ) : null}
+      </Box>
+      {children}
+    </Container>
+  );
+};
+
+--- FILE: src/modules/_shared/ui/LoadingState.tsx ---
+import { Box, CircularProgress, Typography } from "@mui/material";
+import React from "react";
+
+interface LoadingStateProps {
+  message?: string;
+}
+
+export const LoadingState = ({ message }: LoadingStateProps) => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 2,
+        py: 6,
+      }}
+    >
+      <CircularProgress />
+      <Typography variant="body2" color="text.secondary">
+        {message ?? "Carregando..."}
+      </Typography>
+    </Box>
+  );
+};
+
+--- FILE: src/modules/_shared/hooks/useAppInit.ts ---
+import { useEffect, useState } from "react";
+import { initApp } from "@/app/bootstrap/initApp";
+
+export const useAppInit = () => {
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    initApp().then(() => {
+      if (active) {
+        setInitialized(true);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return { initialized };
+};
+
+--- FILE: src/modules/_shared/styles/theme.ts ---
+import { createTheme } from "@mui/material/styles";
+
+export const theme = createTheme({
+  palette: {
+    mode: "light",
+    primary: {
+      main: "#1565c0",
+    },
+    secondary: {
+      main: "#7b1fa2",
+    },
+    background: {
+      default: "#f5f7fb",
+    },
+  },
+});
+
+--- FILE: src/modules/_shared/types/index.ts ---
+export type Nullable<T> = T | null;
+
+--- FILE: src/modules/healthcheck/domain/entities/HealthStatus.ts ---
+export interface HealthStatus {
+  status: string;
+  timestamp: string;
+}
+
+--- FILE: src/modules/healthcheck/domain/ports/HealthRepository.ts ---
+import type { HealthStatus } from "@/modules/healthcheck/domain/entities/HealthStatus";
+
+export interface HealthRepository {
+  getStatus(): Promise<HealthStatus>;
+}
+
+--- FILE: src/modules/healthcheck/application/useCases/getHealthStatus.ts ---
+import type { HealthRepository } from "@/modules/healthcheck/domain/ports/HealthRepository";
+
+export const getHealthStatus = (repository: HealthRepository) => {
+  return repository.getStatus();
+};
+
+--- FILE: src/modules/healthcheck/infra/api/healthHttpRepository.ts ---
+import { apiClient } from "@/infra/http/apiClient";
+import type { HealthStatus } from "@/modules/healthcheck/domain/entities/HealthStatus";
+import type { HealthRepository } from "@/modules/healthcheck/domain/ports/HealthRepository";
+
+export const healthHttpRepository: HealthRepository = {
+  async getStatus() {
+    return apiClient.get<HealthStatus>("/health");
+  },
+};
+
+--- FILE: src/modules/healthcheck/presentation/state/healthApi.ts ---
+import { createApi } from "@reduxjs/toolkit/query/react";
+import type { BaseQueryFn } from "@reduxjs/toolkit/query";
+import { apiClient } from "@/infra/http/apiClient";
+import { AppError } from "@/core/errors/AppError";
+import type { HealthStatus } from "@/modules/healthcheck/domain/entities/HealthStatus";
+
+interface RequestArgs {
+  path: string;
+  method?: string;
+}
+
+const baseQuery: BaseQueryFn<RequestArgs, unknown, AppError> = async ({
+  path,
+  method = "GET",
+}) => {
+  try {
+    const data = await apiClient.request<HealthStatus>(path, { method });
+    return { data };
+  } catch (error) {
+    return { error: error as AppError };
+  }
+};
+
+export const healthApi = createApi({
+  reducerPath: "healthApi",
+  baseQuery,
+  endpoints: (builder) => ({
+    getHealthStatus: builder.query<HealthStatus, void>({
+      query: () => ({ path: "/health" }),
+    }),
+  }),
+});
+
+export const { useGetHealthStatusQuery } = healthApi;
+
+--- FILE: src/modules/healthcheck/presentation/state/healthSlice.ts ---
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
+interface HealthState {
+  lastCheckedAt: string | null;
+}
+
+const initialState: HealthState = {
+  lastCheckedAt: null,
+};
+
+export const healthSlice = createSlice({
+  name: "health",
+  initialState,
+  reducers: {
+    setLastCheckedAt(state, action: PayloadAction<string>) {
+      state.lastCheckedAt = action.payload;
+    },
+  },
+});
+
+export const { setLastCheckedAt } = healthSlice.actions;
+
+--- FILE: src/modules/healthcheck/presentation/state/selectors.ts ---
+import type { RootState } from "@/app/store/rootReducer";
+
+export const selectHealthLastCheckedAt = (state: RootState) =>
+  state.health.lastCheckedAt;
+
+--- FILE: src/modules/healthcheck/presentation/components/HealthCard.tsx ---
+import { Card, CardContent, Stack, Typography } from "@mui/material";
+import React from "react";
+import type { HealthStatus } from "@/modules/healthcheck/domain/entities/HealthStatus";
+
+interface HealthCardProps {
+  data: HealthStatus;
+}
+
+export const HealthCard = ({ data }: HealthCardProps) => {
+  return (
+    <Card elevation={3}>
+      <CardContent>
+        <Stack spacing={1}>
+          <Typography variant="overline" color="text.secondary">
+            Status do serviço
+          </Typography>
+          <Typography variant="h5" fontWeight={600}>
+            {data.status}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Última verificação: {new Date(data.timestamp).toLocaleString()}
+          </Typography>
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+};
+
+--- FILE: src/modules/healthcheck/presentation/pages/HealthPage.tsx ---
+import { Alert, Stack } from "@mui/material";
+import React, { useEffect } from "react";
+import { useAppDispatch } from "@/app/store/typedHooks";
+import { PageLayout } from "@/modules/_shared/ui/PageLayout";
+import { LoadingState } from "@/modules/_shared/ui/LoadingState";
+import { HealthCard } from "@/modules/healthcheck/presentation/components/HealthCard";
+import {
+  setLastCheckedAt,
+} from "@/modules/healthcheck/presentation/state/healthSlice";
+import { useGetHealthStatusQuery } from "@/modules/healthcheck/presentation/state/healthApi";
+
+export const HealthPage = () => {
+  const dispatch = useAppDispatch();
+  const { data, isLoading, isError, error } = useGetHealthStatusQuery();
+
+  useEffect(() => {
+    if (data?.timestamp) {
+      dispatch(setLastCheckedAt(data.timestamp));
+    }
+  }, [data, dispatch]);
+
+  return (
+    <PageLayout
+      title="Healthcheck"
+      subtitle="Smoke test do boilerplate com RTK Query e MUI."
+    >
+      <Stack spacing={3}>
+        {isLoading && <LoadingState message="Consultando /health..." />}
+        {isError && (
+          <Alert severity="error">
+            Erro ao consultar status{error ? ": " + JSON.stringify(error) : "."}
+          </Alert>
+        )}
+        {data && <HealthCard data={data} />}
+      </Stack>
+    </PageLayout>
+  );
+};
+
+--- FILE: architecture.md ---
+# Architecture
+
+## Stack
+- React 19 + TypeScript + Vite
+- Material UI (MUI)
+- Redux Toolkit + RTK Query
+- React Router DOM
+
+## Estrutura (Clean Architecture)
+- **domain**: entidades e contratos puros.
+- **application**: casos de uso e orquestração.
+- **presentation**: React (pages/components/hooks/state).
+- **infra**: adaptadores concretos (HTTP, storage, analytics).
+- **app**: bootstrap, providers, routes, store, config.
+
+Restrições de dependência:
+- domain não importa app/infra/presentation.
+- application pode importar domain, mas não presentation.
+- presentation pode importar application/domain e usar infra via DI.
+- infra não importa presentation.
+
+## Módulos
+### Implementados
+- **healthcheck**: fluxo end-to-end com RTK Query, UI e mock opcional.
+
+### Scaffolded (stubs)
+- **auth**: login e sessão (UC-001, RF-001).
+- **modules**: listagem de módulos (UC-001, RF-002).
+- **boards**: navegação/kanban e operações (UC-002, UC-003, UC-004, UC-007).
+- **admin**: administração de cadastros (UC-005).
+
+> Esses módulos estão com estrutura base e **sem implementação**, aguardando definições de produto e contratos API.
+
+## Healthcheck (smoke sample)
+- RTK Query chama `GET /health`.
+- Página renderiza status e timestamp.
+- Mock simples via `VITE_API_MOCK=true`.
+
+## Configuração de ambiente
+Variáveis suportadas:
+- `VITE_API_BASE_URL`: base URL da API (ex.: `http://localhost:3000`).
+- `VITE_API_MOCK`: quando `true`, retorna mock para `/health`.
+
+Exemplo:
+```bash
+VITE_API_MOCK=true npm run dev
+```
+
+## Mock HTTP
+- Implementado em `src/infra/http/apiClient.ts`.
+- Com `VITE_API_MOCK=true`, retorna mock para `/health`.
+- Caso contrário, faz request para `${VITE_API_BASE_URL}/health`.
+
+## Pendências (READY_FOR_IMPLEMENTATION=false)
+Partes que ficam **stub/mock** até decisão de POA:
+- **UC-006 / RF-012** (idempotência de ingestão): bloqueado por **POA-004**.
+- **RF-005 / RN-006** (ordenação/posição de cards): bloqueado por **POA-005**.
+
+Outras POAs (não bloqueantes):
+- **POA-001**: rotas definitivas.
+- **POA-002**: perfil Gestor/Líder.
+- **POA-003**: formato de persistência de CardType.
+
+## Como rodar
+```bash
+npm install
+npm run dev
+```
+
+## Como adicionar módulos
+1) Criar pasta em `src/modules/<nome>` com `domain`, `application`, `presentation`, `infra`.
+2) Registrar rotas em `src/app/routes` quando houver páginas.
+3) Injetar adaptadores em `src/infra/di/container.ts`.
+4) Incluir reducers/RTK Query em `src/app/store/rootReducer.ts`.
+
+## Gate 2 Checklist
+- [ ] Gate 2A: `npm run dev` sobe sem erros (healthcheck renderiza)
+- [ ] Gate 2B: `npm run build` executa (TypeScript + Vite)
+- [ ] Gate 2C: `npm run typecheck` existe e passa
+- [ ] Gate 2E: `npm run lint` e `npm run format` existem (mínimos), ou BLOCKED_TOOLING documentado
+
+--- FILE: boilerplate.plan.json ---
+{
+  "generation_order": [
+    {
+      "step": 1,
+      "files": [
+        "package.json",
+        "tsconfig.json",
+        "vite.config.ts",
+        ".eslintrc.cjs",
+        ".prettierrc",
+        "index.html",
+        "src/vite-env.d.ts"
+      ]
+    },
+    {
+      "step": 2,
+      "files": [
+        "src/app/bootstrap/initApp.ts",
+        "src/app/providers/AppProviders.tsx",
+        "src/app/routes/index.tsx",
+        "src/app/routes/routePaths.ts",
+        "src/app/store/index.ts",
+        "src/app/store/rootReducer.ts",
+        "src/app/store/typedHooks.ts",
+        "src/app/config/env.ts",
+        "src/app/config/constants.ts",
+        "src/app/index.ts",
+        "src/core/contracts/ILogger.ts",
+        "src/core/errors/AppError.ts",
+        "src/core/utils/guard.ts",
+        "src/infra/http/apiClient.ts",
+        "src/infra/di/container.ts",
+        "src/modules/_shared/ui/PageLayout.tsx",
+        "src/modules/_shared/ui/LoadingState.tsx",
+        "src/modules/_shared/hooks/useAppInit.ts",
+        "src/modules/_shared/styles/theme.ts",
+        "src/modules/_shared/types/index.ts",
+        "src/modules/healthcheck/domain/entities/HealthStatus.ts",
+        "src/modules/healthcheck/domain/ports/HealthRepository.ts",
+        "src/modules/healthcheck/application/useCases/getHealthStatus.ts",
+        "src/modules/healthcheck/infra/api/healthHttpRepository.ts",
+        "src/modules/healthcheck/presentation/state/healthApi.ts",
+        "src/modules/healthcheck/presentation/state/healthSlice.ts",
+        "src/modules/healthcheck/presentation/state/selectors.ts",
+        "src/modules/healthcheck/presentation/components/HealthCard.tsx",
+        "src/modules/healthcheck/presentation/pages/HealthPage.tsx",
+        "src/main.tsx"
+      ]
+    },
+    {
+      "step": 3,
+      "files": [
+        "architecture.md",
+        "repo.tree.txt",
+        "boilerplate.plan.json",
+        "code.bundle.txt"
+      ]
+    }
+  ],
+  "scaffolded_modules": [
+    "auth",
+    "modules",
+    "boards",
+    "admin"
+  ],
+  "implemented_modules": [
+    "healthcheck"
+  ],
+  "notes": [
+    "READY_FOR_IMPLEMENTATION=false: módulos além do healthcheck ficam apenas scaffolded.",
+    "Mock HTTP: VITE_API_MOCK=true retorna resposta para /health."
+  ]
+}
+
+--- FILE: repo.tree.txt ---
+kanban-hub-ui/
+├── artefatos
+│   └── requisitos preliminares.txt
+├── src
+│   ├── app
+│   │   ├── bootstrap
+│   │   │   └── initApp.ts
+│   │   ├── config
+│   │   │   ├── constants.ts
+│   │   │   └── env.ts
+│   │   ├── providers
+│   │   │   └── AppProviders.tsx
+│   │   ├── routes
+│   │   │   ├── index.tsx
+│   │   │   └── routePaths.ts
+│   │   ├── store
+│   │   │   ├── index.ts
+│   │   │   ├── rootReducer.ts
+│   │   │   └── typedHooks.ts
+│   │   └── index.ts
+│   ├── core
+│   │   ├── contracts
+│   │   │   └── ILogger.ts
+│   │   ├── errors
+│   │   │   └── AppError.ts
+│   │   └── utils
+│   │       └── guard.ts
+│   ├── infra
+│   │   ├── di
+│   │   │   └── container.ts
+│   │   └── http
+│   │       └── apiClient.ts
+│   ├── modules
+│   │   ├── _shared
+│   │   │   ├── hooks
+│   │   │   │   └── useAppInit.ts
+│   │   │   ├── styles
+│   │   │   │   └── theme.ts
+│   │   │   ├── types
+│   │   │   │   └── index.ts
+│   │   │   └── ui
+│   │   │       ├── LoadingState.tsx
+│   │   │       └── PageLayout.tsx
+│   │   ├── admin
+│   │   │   ├── application
+│   │   │   │   └── .gitkeep
+│   │   │   ├── domain
+│   │   │   │   └── .gitkeep
+│   │   │   ├── infra
+│   │   │   │   └── .gitkeep
+│   │   │   ├── presentation
+│   │   │   │   └── .gitkeep
+│   │   │   └── .gitkeep
+│   │   ├── auth
+│   │   │   ├── application
+│   │   │   │   └── .gitkeep
+│   │   │   ├── domain
+│   │   │   │   └── .gitkeep
+│   │   │   ├── infra
+│   │   │   │   └── .gitkeep
+│   │   │   ├── presentation
+│   │   │   │   └── .gitkeep
+│   │   │   └── .gitkeep
+│   │   ├── boards
+│   │   │   ├── application
+│   │   │   │   └── .gitkeep
+│   │   │   ├── domain
+│   │   │   │   └── .gitkeep
+│   │   │   ├── infra
+│   │   │   │   └── .gitkeep
+│   │   │   ├── presentation
+│   │   │   │   └── .gitkeep
+│   │   │   └── .gitkeep
+│   │   ├── healthcheck
+│   │   │   ├── application
+│   │   │   │   └── useCases
+│   │   │   │       └── getHealthStatus.ts
+│   │   │   ├── domain
+│   │   │   │   ├── entities
+│   │   │   │   │   └── HealthStatus.ts
+│   │   │   │   └── ports
+│   │   │   │       └── HealthRepository.ts
+│   │   │   ├── infra
+│   │   │   │   └── api
+│   │   │   │       └── healthHttpRepository.ts
+│   │   │   └── presentation
+│   │   │       ├── components
+│   │   │       │   └── HealthCard.tsx
+│   │   │       ├── pages
+│   │   │       │   └── HealthPage.tsx
+│   │   │       └── state
+│   │   │           ├── healthApi.ts
+│   │   │           ├── healthSlice.ts
+│   │   │           └── selectors.ts
+│   │   └── modules
+│   │       ├── application
+│   │       │   └── .gitkeep
+│   │       ├── domain
+│   │       │   └── .gitkeep
+│   │       ├── infra
+│   │       │   └── .gitkeep
+│   │       ├── presentation
+│   │       │   └── .gitkeep
+│   │       └── .gitkeep
+│   ├── main.tsx
+│   └── vite-env.d.ts
+├── .eslintrc.cjs
+├── .gitignore
+├── .prettierrc
+├── README.md
+├── architecture.md
+├── assumptions.md
+├── boilerplate.plan.json
+├── code.bundle.txt
+├── index.html
+├── package.json
+├── patch.json
+├── questions.md
+├── repo.tree.txt
+├── spec.json
+├── spec.md
+├── spec.resolved.json
+├── tsconfig.json
+├── validation.md
+└── vite.config.ts
