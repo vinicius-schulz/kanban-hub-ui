@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "schema_version": "trace.v1",
+    "generated_by": "AGENT_07_V3_AGENTDIR",
+    "increment_id": "INC-000",
+    "mode": "IMPLEMENT",
+    "run_id": "RUN-000001"
+  },
+  "mapped": [],
+  "provisories": [
+    {
+      "what": "Modelo flexível de CardType/Field",
+      "because": "POA-003",
+      "replacement_plan": "Ajustar tipos após decisão do PO"
+    }
+  ],
+  "gates": [
+    { "name": "typecheck", "expected": "pass", "status": "UNKNOWN" },
+    { "name": "lint", "expected": "pass", "status": "UNKNOWN" },
+    { "name": "build", "expected": "pass", "status": "UNKNOWN" }
+  ],
+  "known_issues": []
+}

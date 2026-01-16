@@ -1,0 +1,38 @@
+{
+  "schema_version": "state.v1",
+  "run_seq": 1,
+  "current_increment_id": "INC-000",
+  "increments": {
+    "INC-000": {
+      "status": "IN_PROGRESS",
+      "done": [
+        "Tipos base para Module, Board, Column, Card, CardType, Field, Label, IngressSource, Plugin, Webhook, User",
+        "Enums principais (Field.type, Field.mode, Plugin.status, Webhook.method)",
+        "Fixtures de exemplo para módulos, boards, cards e históricos"
+      ],
+      "pending": [
+        "Rodar lint/typecheck/build e anexar gate.summary.json + runner.log.txt"
+      ],
+      "notes": "Contratos de domínio e fixtures mínimas criadas em _shared.",
+      "needed_context": []
+    }
+  },
+  "last_run": {
+    "mode": "IMPLEMENT",
+    "increment_id": "INC-000",
+    "gates": [
+      { "name": "lint", "status": "UNKNOWN" },
+      { "name": "typecheck", "status": "UNKNOWN" },
+      { "name": "build", "status": "UNKNOWN" }
+    ],
+    "runner_commands_to_execute_next": [
+      "npm run lint",
+      "npm run typecheck",
+      "npm run build"
+    ],
+    "evidence_refs": {
+      "gate_summary_present": false,
+      "runner_log_present": false
+    }
+  }
+}
