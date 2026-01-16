@@ -6,11 +6,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Paper,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Board, Card, ColumnId } from "@/modules/_shared/domain/domain.contracts";
 import {
@@ -19,11 +21,12 @@ import {
   createManualCard,
   getCardHistoryByCardId,
   getCardsPage,
-  getColumnsByBoardId,
   moveCardToColumn,
 } from "@/modules/boards/application/kanbanState";
-import { getWebhooksByBoardId } from "@/modules/boards/infra/boardWebhooks.fixtures";
+import type { BoardConfig } from "@/modules/boards/application/boardConfigState";
+import { getBoardConfig, saveBoardConfig } from "@/modules/boards/application/boardConfigState";
 import { CardModal } from "@/modules/boards/presentation/components/CardModal";
+import { BoardSettingsDialog } from "@/modules/boards/presentation/components/BoardSettingsDialog";
 
 interface KanbanBoardProps {
   board: Board;
@@ -39,7 +42,11 @@ const getCardTitle = (card: Card) => {
 };
 
 export const KanbanBoard = ({ board }: KanbanBoardProps) => {
-  const columns = useMemo(() => getColumnsByBoardId(board.id), [board.id]);
+  const [boardConfig, setBoardConfig] = useState<BoardConfig>(() => getBoardConfig(board.id));
+  const columns = useMemo(
+    () => [...boardConfig.columns].sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
+    [boardConfig.columns]
+  );
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [pagesByColumn, setPagesByColumn] = useState<Record<ColumnId, number>>({} as Record<ColumnId, number>);
   const [boardCards, setBoardCards] = useState<Card[]>([]);
@@ -47,7 +54,19 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
   const [createColumnId, setCreateColumnId] = useState<ColumnId | "">("");
   const [createTitle, setCreateTitle] = useState("");
   const [createImpact, setCreateImpact] = useState("");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const manualCardSequenceRef = useRef(1);
+
+  useEffect(() => {
+    setBoardConfig(getBoardConfig(board.id));
+    setSelectedCard(null);
+    setBoardCards(buildBoardCardsState(board.id));
+    setIsCreateOpen(false);
+    setCreateColumnId("");
+    setCreateTitle("");
+    setCreateImpact("");
+    setIsSettingsOpen(false);
+  }, [board.id]);
 
   useEffect(() => {
     setPagesByColumn(
@@ -56,16 +75,10 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
         return acc;
       }, {})
     );
-    setSelectedCard(null);
-    setBoardCards(buildBoardCardsState(board.id));
-    setIsCreateOpen(false);
-    setCreateColumnId("");
-    setCreateTitle("");
-    setCreateImpact("");
   }, [columns]);
 
   const selectedCardHistory = selectedCard ? getCardHistoryByCardId(selectedCard.id) : [];
-  const availableWebhooks = useMemo(() => getWebhooksByBoardId(board.id), [board.id]);
+  const availableWebhooks = useMemo(() => boardConfig.webhooks, [boardConfig.webhooks]);
 
   const handleLoadMore = (columnId: ColumnId) => {
     setPagesByColumn((prev) => ({
@@ -106,6 +119,10 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
     setCreateImpact("");
   };
 
+  const handleSaveSettings = (nextConfig: BoardConfig) => {
+    setBoardConfig(saveBoardConfig(board.id, nextConfig));
+  };
+
   return (
     <Stack spacing={2}>
       <Paper variant="outlined" sx={{ p: 3 }}>
@@ -119,8 +136,14 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
                 {board.description}
               </Typography>
             </Box>
-            <Chip label="Kanban mock" color="primary" size="small" />
-            <Chip label={`Lazy load: ${BOARD_CARDS_PAGE_SIZE} cards`} size="small" variant="outlined" />
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Chip label="Kanban mock" color="primary" size="small" />
+              <Chip label={`Lazy load: ${BOARD_CARDS_PAGE_SIZE} cards`} size="small" variant="outlined" />
+              <Chip label="Configuração mock" size="small" variant="outlined" />
+              <IconButton aria-label="Configurar board" onClick={() => setIsSettingsOpen(true)}>
+                <SettingsOutlinedIcon />
+              </IconButton>
+            </Stack>
           </Stack>
         </Stack>
       </Paper>
@@ -226,6 +249,14 @@ export const KanbanBoard = ({ board }: KanbanBoardProps) => {
         historyEntries={selectedCardHistory}
         webhooks={availableWebhooks}
         onClose={() => setSelectedCard(null)}
+      />
+
+      <BoardSettingsDialog
+        open={isSettingsOpen}
+        board={board}
+        config={boardConfig}
+        onClose={() => setIsSettingsOpen(false)}
+        onSave={handleSaveSettings}
       />
 
       <Dialog open={isCreateOpen} onClose={() => setIsCreateOpen(false)} maxWidth="sm" fullWidth>
