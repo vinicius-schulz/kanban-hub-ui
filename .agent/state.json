@@ -1,0 +1,37 @@
+{
+  "schema_version": "state.v1",
+  "run_seq": 1,
+  "current_increment_id": "INC-000",
+  "increments": {
+    "INC-000": {
+      "status": "IN_PROGRESS",
+      "done": [
+        "Contratos de domínio e fixtures compartilhadas",
+        "Fixtures mínimas disponíveis"
+      ],
+      "pending": [
+        "Rodar lint/typecheck/build e anexar gate.summary.json + runner.log.txt"
+      ],
+      "notes": "Base de contratos e fixtures já existe no repositório.",
+      "needed_context": []
+    }
+  },
+  "last_run": {
+    "mode": "IMPLEMENT",
+    "increment_id": "INC-000",
+    "gates": [
+      { "name": "lint", "status": "UNKNOWN" },
+      { "name": "typecheck", "status": "UNKNOWN" },
+      { "name": "build", "status": "UNKNOWN" }
+    ],
+    "runner_commands_to_execute_next": [
+      "npm run lint",
+      "npm run typecheck",
+      "npm run build"
+    ],
+    "evidence_refs": {
+      "gate_summary_present": false,
+      "runner_log_present": false
+    }
+  }
+}

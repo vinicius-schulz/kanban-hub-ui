@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "schema_version": "trace.v1",
+    "generated_by": "AGENT_07_V2_AGENTDIR",
+    "increment_id": "INC-000",
+    "mode": "IMPLEMENT",
+    "run_id": "RUN-000001"
+  },
+  "mapped": [],
+  "provisories": [],
+  "gates": [
+    { "name": "typecheck", "expected": "pass", "status": "UNKNOWN" },
+    { "name": "lint", "expected": "pass", "status": "UNKNOWN" },
+    { "name": "build", "expected": "pass", "status": "UNKNOWN" }
+  ],
+  "known_issues": []
+}
