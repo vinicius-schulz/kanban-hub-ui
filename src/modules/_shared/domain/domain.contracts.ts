@@ -82,6 +82,7 @@ export interface Card {
   idempotencyKey?: string | null;
 }
 
+// TODO(POA-003): Ajustar o modelo de CardTypeField após definição do PO.
 export interface CardTypeField {
   label?: string;
   type?: CardTypeFieldType;
