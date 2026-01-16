@@ -16,6 +16,6 @@
 - .agent/trace.delta.json
 
 ## Notes
-- Sem mudanças de código do produto; contratos e fixtures já estão presentes no repositório.
+- Sem mudanças de código do produto (execução em modo FIX_BLOCKED).
+- Evidências necessárias: runner.log.txt e gate.summary.json com saída de lint/typecheck/build.
 - Comandos sugeridos para o runner: npm run lint, npm run typecheck, npm run build.
-- Anexar gate.summary.json + runner.log.txt após executar os gates.

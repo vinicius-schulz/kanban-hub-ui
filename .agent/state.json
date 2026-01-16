@@ -1,6 +1,6 @@
 {
   "schema_version": "state.v1",
-  "run_seq": 1,
+  "run_seq": 2,
   "current_increment_id": "INC-000",
   "increments": {
     "INC-000": {
@@ -10,14 +10,17 @@
         "Fixtures mínimas disponíveis"
       ],
       "pending": [
-        "Rodar lint/typecheck/build e anexar gate.summary.json + runner.log.txt"
+        "Anexar runner.log.txt/gate.summary.json com lint/typecheck/build"
       ],
       "notes": "Base de contratos e fixtures já existe no repositório.",
-      "needed_context": []
+      "needed_context": [
+        "runner.log.txt com saída de npm run lint/typecheck/build",
+        "gate.summary.json correspondente"
+      ]
     }
   },
   "last_run": {
-    "mode": "IMPLEMENT",
+    "mode": "FIX_BLOCKED",
     "increment_id": "INC-000",
     "gates": [
       { "name": "lint", "status": "UNKNOWN" },

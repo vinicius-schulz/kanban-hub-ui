@@ -3,8 +3,8 @@
     "schema_version": "trace.v1",
     "generated_by": "AGENT_07_V2_AGENTDIR",
     "increment_id": "INC-000",
-    "mode": "IMPLEMENT",
-    "run_id": "RUN-000001"
+    "mode": "FIX_BLOCKED",
+    "run_id": "RUN-000002"
   },
   "mapped": [],
   "provisories": [],
