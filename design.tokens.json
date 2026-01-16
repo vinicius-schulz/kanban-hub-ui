@@ -1,0 +1,77 @@
+{
+  "color": {
+    "primary": {
+      "main": "#0F4C5C",
+      "dark": "#0B3945",
+      "light": "#2A6B7C"
+    },
+    "secondary": {
+      "main": "#F2A65A",
+      "dark": "#D68636",
+      "light": "#F7C28B"
+    },
+    "neutral": {
+      "0": "#FFFFFF",
+      "50": "#FAF7F2",
+      "100": "#F3EEE6",
+      "900": "#1C1A18"
+    },
+    "success": {
+      "main": "#2E7D32"
+    },
+    "warning": {
+      "main": "#ED6C02"
+    },
+    "error": {
+      "main": "#D32F2F"
+    },
+    "info": {
+      "main": "#0277BD"
+    },
+    "bg": {
+      "page": "#F6F1EA",
+      "surface": "#FFFFFF",
+      "elevated": "#FFFCF8"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "heading": "Sora, \"Segoe UI\", sans-serif",
+      "body": "\"Source Sans 3\", \"Segoe UI\", sans-serif"
+    },
+    "scale": {
+      "xs": 12,
+      "sm": 14,
+      "md": 16,
+      "lg": 20,
+      "xl": 28,
+      "xxl": 36
+    }
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "xxl": 48
+  },
+  "radius": {
+    "sm": 6,
+    "md": 10,
+    "lg": 16,
+    "xl": 24
+  },
+  "shadow": {
+    "sm": "0 1px 2px rgba(28, 26, 24, 0.08)",
+    "md": "0 6px 18px rgba(28, 26, 24, 0.12)",
+    "lg": "0 12px 28px rgba(28, 26, 24, 0.18)"
+  },
+  "layout": {
+    "maxWidth": 1200,
+    "gutter": 24,
+    "headerHeight": 64,
+    "sidebarWidth": 280,
+    "rightRailWidth": 320
+  }
+}
