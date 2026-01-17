@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
@@ -8,6 +9,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageLayout } from "@/modules/_shared/ui/PageLayout";
 import { ModulesNav } from "@/modules/modules/presentation/components/ModulesNav";
@@ -17,12 +19,17 @@ import { routePaths } from "@/app/routes/routePaths";
 import { getStoredSession } from "@/modules/auth/infra/mockAuth";
 import { LoadingState } from "@/modules/_shared/ui/LoadingState";
 import { CardDetailsModal } from "@/modules/card/presentation/components/CardDetailsModal";
+import { BoardSettingsDialog } from "@/modules/board/presentation/components/BoardSettingsDialog";
 import type {
+  Board,
   Card as CardEntity,
   CardHistoryEvent,
   CardId,
+  Column,
   ColumnId,
   JsonValue,
+  Label,
+  LabelId,
 } from "@/core/domain/domain.contracts";
 
 const isRecord = (value: JsonValue | null | undefined): value is Record<string, JsonValue> => {
@@ -52,6 +59,16 @@ export const BoardKanbanPage = () => {
   const [dragOverColumnId, setDragOverColumnId] = useState<ColumnId | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<CardId | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [boardConfig, setBoardConfig] = useState<Board | null>(() =>
+    fixtures.boards.find((item) => item.id === boardId) ?? null
+  );
+  const [columnsConfig, setColumnsConfig] = useState<Column[]>(() =>
+    fixtures.columns.filter((column) => column.boardId === boardId)
+  );
+  const [labelsConfig, setLabelsConfig] = useState<Label[]>(() =>
+    fixtures.labels.filter((label) => label.boardId === boardId)
+  );
   const [cards, setCards] = useState<CardEntity[]>(() =>
     fixtures.cards.map((card) => ({
       ...card,
@@ -63,6 +80,18 @@ export const BoardKanbanPage = () => {
   );
 
   useEffect(() => {
+    if (!boardId) {
+      setBoardConfig(null);
+      setColumnsConfig([]);
+      setLabelsConfig([]);
+      return;
+    }
+    setBoardConfig(fixtures.boards.find((item) => item.id === boardId) ?? null);
+    setColumnsConfig(fixtures.columns.filter((column) => column.boardId === boardId));
+    setLabelsConfig(fixtures.labels.filter((label) => label.boardId === boardId));
+  }, [boardId]);
+
+  useEffect(() => {
     setIsSessionChecked(true);
   }, []);
 
@@ -72,10 +101,7 @@ export const BoardKanbanPage = () => {
     }
   }, [isSessionChecked, navigate, sessionSnapshot]);
 
-  const board = useMemo(
-    () => fixtures.boards.find((item) => item.id === boardId),
-    [boardId]
-  );
+  const board = boardConfig;
 
   const moduleNode = useMemo(
     () => fixtures.moduleNodes.find((node) => node.boardId === boardId),
@@ -87,10 +113,7 @@ export const BoardKanbanPage = () => {
     [moduleNode]
   );
 
-  const columns = useMemo(
-    () => fixtures.columns.filter((column) => column.boardId === boardId),
-    [boardId]
-  );
+  const columns = useMemo(() => columnsConfig, [columnsConfig]);
 
   const boardCards = useMemo(
     () => cards.filter((card) => card.boardId === boardId),
@@ -98,9 +121,27 @@ export const BoardKanbanPage = () => {
   );
 
   const labelsById = useMemo(() => {
-    const map = new Map(fixtures.labels.map((label) => [label.id, label]));
+    const map = new Map(labelsConfig.map((label) => [label.id, label]));
     return map;
-  }, []);
+  }, [labelsConfig]);
+
+  const cardCountByColumn = useMemo(() => {
+    const map = new Map<ColumnId, number>();
+    boardCards.forEach((card) => {
+      map.set(card.columnId, (map.get(card.columnId) ?? 0) + 1);
+    });
+    return map;
+  }, [boardCards]);
+
+  const cardCountByLabel = useMemo(() => {
+    const map = new Map<LabelId, number>();
+    boardCards.forEach((card) => {
+      card.labels?.forEach((labelId) => {
+        map.set(labelId, (map.get(labelId) ?? 0) + 1);
+      });
+    });
+    return map;
+  }, [boardCards]);
 
   const selectedCard = useMemo(
     () => cards.find((card) => card.id === selectedCardId) ?? null,
@@ -178,6 +219,25 @@ export const BoardKanbanPage = () => {
     setSelectedCardId(null);
   };
 
+  const handleOpenSettings = () => {
+    setIsSettingsOpen(true);
+  };
+
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false);
+  };
+
+  const handleSaveSettings = (payload: {
+    board: Board;
+    columns: Column[];
+    labels: Label[];
+  }) => {
+    setBoardConfig(payload.board);
+    setColumnsConfig(payload.columns);
+    setLabelsConfig(payload.labels);
+    setIsSettingsOpen(false);
+  };
+
   const handleSaveCard = (updatedCard: CardEntity, summary: string) => {
     setCards((prev) => prev.map((card) => (card.id === updatedCard.id ? updatedCard : card)));
     setHistoryEvents((prev) => [
@@ -205,11 +265,18 @@ export const BoardKanbanPage = () => {
           {moduleInfo?.name ?? "Módulo"} &bull; {board?.name ?? "Board"}
         </Typography>
       </Box>
-      <Box marginLeft="auto">
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} marginLeft="auto">
         <Typography variant="body2" color="text.secondary">
           Arraste cards entre colunas ou clique para editar detalhes.
         </Typography>
-      </Box>
+        <Button
+          variant="outlined"
+          startIcon={<SettingsOutlinedIcon />}
+          onClick={handleOpenSettings}
+        >
+          Configurar board
+        </Button>
+      </Stack>
     </Stack>
   );
 
@@ -327,10 +394,22 @@ export const BoardKanbanPage = () => {
         open={Boolean(selectedCard)}
         card={selectedCard}
         cardTypeFields={cardTypeFields}
-        labels={fixtures.labels}
+        labels={labelsConfig}
         historyEvents={selectedCardHistory}
         onClose={handleCloseCard}
         onSave={handleSaveCard}
+      />
+      <BoardSettingsDialog
+        open={isSettingsOpen}
+        board={board}
+        columns={columns}
+        labels={labelsConfig}
+        cardTypes={fixtures.cardTypes}
+        ingressSources={fixtures.ingressSources}
+        cardCountByColumn={cardCountByColumn}
+        cardCountByLabel={cardCountByLabel}
+        onClose={handleCloseSettings}
+        onSave={handleSaveSettings}
       />
     </>
   );
